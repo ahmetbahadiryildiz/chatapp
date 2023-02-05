@@ -2,6 +2,9 @@ package com.greemlock.edutherapist;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -39,7 +42,10 @@ public class ChatActivity extends AppCompatActivity {
         Button button = findViewById(R.id.buttonChat);
         EditText editText = findViewById(R.id.editTestMessage);
 
-        ListView listView = findViewById(R.id.chat);
+        RecyclerView recyclerView = findViewById(R.id.recyclerViewChat);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         ArrayList<ObjectMessage> messageList = new ArrayList();
 
         Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
@@ -58,13 +64,9 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     if (!isInList){messageList.add(objectMessage);}
                 }
-                ArrayList<Integer> resources  = new ArrayList<Integer>();
-                resources.add(R.layout.message_layout);
-                resources.add(R.layout.message_layout_my_messages);
-
-                final MessageListAdapter messageRecyclerAdapter = new MessageListAdapter(getApplicationContext(),R.layout.message_layout,messageList);
-                listView.setAdapter(messageRecyclerAdapter);
-                listView.setSelection(listView.getAdapter().getCount()-1);
+                MessageRecyclerAdapter messageRecyclerAdapter = new MessageRecyclerAdapter(ChatActivity.this,messageList);
+                recyclerView.setAdapter(messageRecyclerAdapter);
+                recyclerView.scrollToPosition(messageList.size()-1);
 
             }
 
