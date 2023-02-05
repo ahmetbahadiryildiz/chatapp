@@ -22,9 +22,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String name = editTextName.getText().toString();
+                SaveSharedPreferences.setPrefName(MainActivity.this,name);
 
                 Intent intentChat = new Intent(MainActivity.this, ChatActivity.class);
-                intentChat.putExtra("name",name);
                 startActivity(intentChat);
             }
         });

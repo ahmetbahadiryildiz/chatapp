@@ -10,26 +10,27 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
-public class MessageRecyclerAdapter extends ArrayAdapter<ObjectMessage> {
+public class MessageRecyclerAdapter extends ArrayAdapter<ObjectMessage>{
 
-    ArrayList<ObjectMessage> arrayList;
     private Context contextActivity;
-    private int mainResource;
+    private int otherMessageResource;
+    private int myMessageResource;
 
     private static class ViewHolder {
-
         TextView name;
         TextView message;
         TextView date;
         ImageView imageView;
     }
 
-    public MessageRecyclerAdapter(Context context, int resource, ArrayList<ObjectMessage> objects) {
-        super(context, resource, objects);
+    public MessageRecyclerAdapter(Context context, int resourceOtherMessages, int resourceMyMessages, ArrayList<ObjectMessage> objects) {
+        super(context, resourceOtherMessages, resourceMyMessages, objects);
         contextActivity = context;
-        mainResource = resource;
+        otherMessageResource = resourceOtherMessages;
+        myMessageResource = resourceMyMessages;
     }
 
     public View getView(int position, View convertView, ViewGroup parent){
@@ -41,9 +42,17 @@ public class MessageRecyclerAdapter extends ArrayAdapter<ObjectMessage> {
         ViewHolder holder;
 
         if(convertView == null){
-
+            String username = SaveSharedPreferences.getPrefName(getContext());
             LayoutInflater inflater = LayoutInflater.from(contextActivity);
-            convertView = inflater.inflate(mainResource, parent, false);
+
+            if(username == name){
+                convertView = inflater.inflate(myMessageResource, parent, false);
+            }
+            else{
+                convertView = inflater.inflate(otherMessageResource, parent, false);
+            }
+
+
             holder = new ViewHolder();
         }
         else {
@@ -55,7 +64,6 @@ public class MessageRecyclerAdapter extends ArrayAdapter<ObjectMessage> {
         holder.imageView = convertView.findViewById(R.id.imageView);
 
         convertView.setTag(holder);
-
         holder.name.setText(name);
         holder.message.setText(message);
         holder.date.setText(date);

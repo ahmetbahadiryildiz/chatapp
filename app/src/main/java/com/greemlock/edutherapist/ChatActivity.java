@@ -57,8 +57,11 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     if (!isInList){messageList.add(objectMessage);}
                 }
+                ArrayList<Integer> resources  = new ArrayList<Integer>();
+                resources.add(R.layout.message_layout);
+                resources.add(R.layout.message_layout_my_messages);
 
-                final MessageRecyclerAdapter messageRecyclerAdapter = new MessageRecyclerAdapter(getApplicationContext(),R.layout.message_layout,messageList);
+                final MessageRecyclerAdapter messageRecyclerAdapter = new MessageRecyclerAdapter(getApplicationContext(),R.layout.message_layout,R.layout.message_layout_my_messages,messageList);
                 listView.setAdapter(messageRecyclerAdapter);
                 listView.setSelection(listView.getAdapter().getCount()-1);
 
