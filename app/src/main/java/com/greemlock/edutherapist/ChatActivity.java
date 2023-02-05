@@ -35,13 +35,14 @@ public class ChatActivity extends AppCompatActivity {
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference("messages");
 
-        String name = getIntent().getStringExtra("name");
+        String name = SaveSharedPreferences.getPrefName(ChatActivity.this);
         Button button = findViewById(R.id.buttonChat);
         EditText editText = findViewById(R.id.editTestMessage);
 
         ListView listView = findViewById(R.id.chat);
         ArrayList<ObjectMessage> messageList = new ArrayList();
 
+        Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -61,7 +62,7 @@ public class ChatActivity extends AppCompatActivity {
                 resources.add(R.layout.message_layout);
                 resources.add(R.layout.message_layout_my_messages);
 
-                final MessageRecyclerAdapter messageRecyclerAdapter = new MessageRecyclerAdapter(getApplicationContext(),R.layout.message_layout,R.layout.message_layout_my_messages,messageList);
+                final MessageListAdapter messageRecyclerAdapter = new MessageListAdapter(getApplicationContext(),R.layout.message_layout,messageList);
                 listView.setAdapter(messageRecyclerAdapter);
                 listView.setSelection(listView.getAdapter().getCount()-1);
 

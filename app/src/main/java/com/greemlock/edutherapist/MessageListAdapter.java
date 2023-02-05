@@ -10,21 +10,17 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-
-public class MessageRecyclerAdapter extends ArrayAdapter<ObjectMessage>{
-
+public class MessageListAdapter extends ArrayAdapter<ObjectMessage> {
     private Context contextActivity;
     private int otherMessageResource;
 
     private static class ViewHolder {
-
         TextView name;
         TextView message;
         TextView date;
         ImageView imageView;
     }
-
-    public MessageRecyclerAdapter(Context context, int resourceOtherMessages, ArrayList<ObjectMessage> objects) {
+    public MessageListAdapter(Context context, int resourceOtherMessages, ArrayList<ObjectMessage> objects) {
         super(context, resourceOtherMessages, objects);
         contextActivity = context;
         otherMessageResource = resourceOtherMessages;
@@ -36,17 +32,17 @@ public class MessageRecyclerAdapter extends ArrayAdapter<ObjectMessage>{
         String message = getItem(position).getMessage();
         String date = getItem(position).getMessage_date();
 
-        ViewHolder holder;
+        MessageListAdapter.ViewHolder holder;
 
         if(convertView == null){
             LayoutInflater inflater = LayoutInflater.from(contextActivity);
             convertView = inflater.inflate(otherMessageResource, parent, false);
 
 
-            holder = new ViewHolder();
+            holder = new MessageListAdapter.ViewHolder();
         }
         else {
-            holder = (ViewHolder) convertView.getTag();
+            holder = (MessageListAdapter.ViewHolder) convertView.getTag();
         }
         holder.name = convertView.findViewById(R.id.name);
         holder.message = convertView.findViewById(R.id.message);
@@ -62,5 +58,4 @@ public class MessageRecyclerAdapter extends ArrayAdapter<ObjectMessage>{
 
         return convertView;
     }
-
 }

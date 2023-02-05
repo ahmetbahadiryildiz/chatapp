@@ -14,7 +14,7 @@ public class SaveSharedPreferences {
 
     public static void setPrefName(Context ctx, String name){
         SharedPreferences.Editor editor = getSharedPreferences(ctx).edit();
-        editor.putString("name",name);
+        editor.putString(PREF_NAME,name);
         editor.commit();
     }
     public static String getPrefName(Context ctx)
