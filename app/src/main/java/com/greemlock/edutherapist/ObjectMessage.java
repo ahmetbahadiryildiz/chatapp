@@ -1,6 +1,8 @@
 package com.greemlock.edutherapist;
 
-public class ObjectMessage {
+import java.io.Serializable;
+
+public class ObjectMessage implements Serializable {
 
     private String message_id;
     private String message_name;

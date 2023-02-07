@@ -4,13 +4,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
@@ -22,16 +22,16 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
+    Intent notificationService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
@@ -47,8 +47,6 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         ArrayList<ObjectMessage> messageList = new ArrayList();
-
-        Toast.makeText(this, name, Toast.LENGTH_SHORT).show();
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -71,9 +69,7 @@ public class ChatActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
+            public void onCancelled(@NonNull DatabaseError error) {}
         });
 
 
@@ -112,8 +108,25 @@ public class ChatActivity extends AppCompatActivity {
                 editText.setText("");
             }
             else{
-                Toast.makeText(this, "You cannot send blank message yarrağam...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "You cannot send blank message...", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        notificationService = new Intent(this, NotificationService.class);
+        stopService(notificationService);
+        Log.e("serviceStatus","Closed");
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.e("serviceStatus","Opened");
+        startService(notificationService);
+
     }
 }
