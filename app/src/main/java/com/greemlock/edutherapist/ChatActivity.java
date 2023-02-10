@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -27,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
-    Intent notificationService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,22 +109,8 @@ public class ChatActivity extends AppCompatActivity {
                 Toast.makeText(this, "You cannot send blank message...", Toast.LENGTH_SHORT).show();
             }
         });
+        Intent intent = new Intent(this,NotificationService.class);
+        startService(intent);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        notificationService = new Intent(this, NotificationService.class);
-        stopService(notificationService);
-        Log.e("serviceStatus","Closed");
-
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.e("serviceStatus","Opened");
-        startService(notificationService);
-
-    }
 }

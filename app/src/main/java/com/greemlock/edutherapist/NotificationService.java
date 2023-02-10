@@ -22,8 +22,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
-import java.security.Provider;
 import java.util.ArrayList;
 
 public class NotificationService extends Service {
@@ -33,6 +31,7 @@ public class NotificationService extends Service {
     ArrayList<ObjectMessage> messages;
     ObjectMessage lastMessage;
     private NotificationCompat.Builder builder;
+    int loopNumber;
 
     @Override
     public void onCreate() {
@@ -41,58 +40,37 @@ public class NotificationService extends Service {
         databaseReference = firebaseDatabase.getReference("messages");
         messages = new ArrayList<>();
         lastMessage = new ObjectMessage();
-
-        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-
-                for(DataSnapshot dataSnapshot:snapshot.getChildren()){
-                    ObjectMessage objectMessage = dataSnapshot.getValue(ObjectMessage.class);
-                    messages.add(objectMessage);
-                }
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-
-            }
-        });
+        loopNumber = 0;
         super.onCreate();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                ArrayList<ObjectMessage> newList = new ArrayList<>();
-
                 for(DataSnapshot dataSnapshot:snapshot.getChildren()){
                     ObjectMessage objectMessage = dataSnapshot.getValue(ObjectMessage.class);
-                    newList.add(objectMessage);
+                    messages.add(objectMessage);
                 }
 
-                if(newList != messages || newList.size() < messages.size()){
-                    messages = newList;
+                if(loopNumber > 0){
                     lastMessage = messages.get(messages.size()-1);
                     String name = SaveSharedPreferences.getPrefName(NotificationService.this);
 
-                    if(!lastMessage.getMessage_name().equals(name)){
+                    if(!lastMessage.getMessage_name().equals(name)) {
                         bildirimGonder(lastMessage);
+                        Log.e("isWorking","true");
                     }
-
                 }
-
+                loopNumber = loopNumber + 1;
+                Log.e("loopNumber",String.valueOf(loopNumber));
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) { }
         });
-
-
-
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -103,7 +81,6 @@ public class NotificationService extends Service {
     }
 
     private void bildirimGonder(ObjectMessage message){
-
         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
         Intent intent = new Intent(getApplicationContext(),getApplicationContext().getClass());
@@ -140,7 +117,11 @@ public class NotificationService extends Service {
         builder.setSmallIcon(R.mipmap.ic_launcher_round);
         builder.setContentIntent(pendingIntent);
 
-        notificationManager.notify(1,builder.build());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(1,builder.build(),getForegroundServiceType());
+        }else{
+            notificationManager.notify(1,builder.build());
+        }
     }
 }
 
