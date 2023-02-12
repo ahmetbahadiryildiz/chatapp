@@ -14,6 +14,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        String name = SaveSharedPreferences.getPrefName(this);
+
+        if (!name.equals("")){
+            loginActivity();
+        }
 
         Button buttonLogin = findViewById(R.id.buttonLogin);
         EditText editTextName = findViewById(R.id.editTextTextPersonName);
@@ -24,10 +29,19 @@ public class MainActivity extends AppCompatActivity {
                 String name = editTextName.getText().toString();
                 SaveSharedPreferences.setPrefName(MainActivity.this,name);
 
-                Intent intentChat = new Intent(MainActivity.this, ChatActivity.class);
-                startActivity(intentChat);
+                loginActivity();
+
             }
         });
 
+    }
+
+    public void loginActivity(){
+
+        Intent intent = new Intent(this,NotificationService.class);
+        startService(intent);
+
+        Intent intentChat = new Intent(MainActivity.this, ChatActivity.class);
+        startActivity(intentChat);
     }
 }

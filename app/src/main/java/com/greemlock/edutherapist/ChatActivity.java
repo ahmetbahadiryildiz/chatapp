@@ -1,6 +1,7 @@
 package com.greemlock.edutherapist;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -8,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -39,6 +41,10 @@ public class ChatActivity extends AppCompatActivity {
         String name = SaveSharedPreferences.getPrefName(ChatActivity.this);
         Button button = findViewById(R.id.buttonChat);
         EditText editText = findViewById(R.id.editTestMessage);
+
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+
 
         RecyclerView recyclerView = findViewById(R.id.recyclerViewChat);
         recyclerView.setHasFixedSize(true);
@@ -109,8 +115,17 @@ public class ChatActivity extends AppCompatActivity {
                 Toast.makeText(this, "You cannot send blank message...", Toast.LENGTH_SHORT).show();
             }
         });
-        Intent intent = new Intent(this,NotificationService.class);
-        startService(intent);
+    }
+
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                Toast.makeText(this, "You logged out!", Toast.LENGTH_SHORT).show();
+                SaveSharedPreferences.setPrefName(this,"");
+                this.finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }

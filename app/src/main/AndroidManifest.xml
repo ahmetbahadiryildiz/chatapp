@@ -14,7 +14,8 @@
         android:theme="@style/Theme.EduTherapist">
         <activity
             android:name=".ChatActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:parentActivityName=".MainActivity"/>
         <service android:name=".NotificationService"
             android:enabled="true"/>
         <activity

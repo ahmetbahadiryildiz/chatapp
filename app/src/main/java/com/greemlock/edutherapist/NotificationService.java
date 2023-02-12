@@ -32,6 +32,7 @@ public class NotificationService extends Service {
     ObjectMessage lastMessage;
     private NotificationCompat.Builder builder;
     int loopNumber;
+    int id;
 
     @Override
     public void onCreate() {
@@ -41,6 +42,7 @@ public class NotificationService extends Service {
         messages = new ArrayList<>();
         lastMessage = new ObjectMessage();
         loopNumber = 0;
+        id = 0;
         super.onCreate();
     }
 
@@ -83,19 +85,17 @@ public class NotificationService extends Service {
     private void bildirimGonder(ObjectMessage message){
         NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
-        Intent intent = new Intent(getApplicationContext(),getApplicationContext().getClass());
-        intent.putExtra("message", (Serializable) message);
-        intent.putExtra("isClicked",true);
+        Intent intent = new Intent(this,ChatActivity.class);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),1,intent,PendingIntent.FLAG_IMMUTABLE);
         String contentTitle = "There is a message from %s!";
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
 
-            String channelID = "newMessage";
+            String channelID = message.getMessage_id();
             String channelName = "New Message";
             String channelDescription = "There is a new message";
-            int channelImportance = NotificationManager.IMPORTANCE_DEFAULT;
+            int channelImportance = NotificationManager.IMPORTANCE_HIGH;
 
             NotificationChannel channel = notificationManager.getNotificationChannel(channelID);
 
@@ -114,6 +114,8 @@ public class NotificationService extends Service {
         builder.setContentTitle(String.format(contentTitle, message.getMessage_name()));
         builder.setContentText(message.getMessage());
         builder.setAutoCancel(true);
+        builder.setOngoing(false);
+        builder.setGroup("CHAT_APP_NOTIFICATION");
         builder.setSmallIcon(R.mipmap.ic_launcher_round);
         builder.setContentIntent(pendingIntent);
 
@@ -122,6 +124,7 @@ public class NotificationService extends Service {
         }else{
             notificationManager.notify(1,builder.build());
         }
+
+        id++;
     }
 }
-
