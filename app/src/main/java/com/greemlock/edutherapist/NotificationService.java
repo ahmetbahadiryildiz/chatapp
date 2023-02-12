@@ -1,5 +1,7 @@
 package com.greemlock.edutherapist;
 
+import static com.greemlock.edutherapist.App.CHANNEL_ID;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -7,13 +9,18 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -30,19 +37,25 @@ public class NotificationService extends Service {
     DatabaseReference databaseReference;
     ArrayList<ObjectMessage> messages;
     ObjectMessage lastMessage;
+    private NotificationManagerCompat notificationManager;
     private NotificationCompat.Builder builder;
     int loopNumber;
     int id;
+    boolean isMessageSent;
+    String name;
 
     @Override
     public void onCreate() {
 
         firebaseDatabase = FirebaseDatabase.getInstance();
         databaseReference = firebaseDatabase.getReference("messages");
+        name = SaveSharedPreferences.getPrefName(NotificationService.this);
+        notificationManager = NotificationManagerCompat.from(getApplicationContext());
         messages = new ArrayList<>();
         lastMessage = new ObjectMessage();
         loopNumber = 0;
         id = 0;
+        isMessageSent = false;
         super.onCreate();
     }
 
@@ -57,14 +70,12 @@ public class NotificationService extends Service {
                     ObjectMessage objectMessage = dataSnapshot.getValue(ObjectMessage.class);
                     messages.add(objectMessage);
                 }
-
-                if(loopNumber > 0){
+                if (!(messages.get(messages.size()-1).getMessage_id().equals(lastMessage.getMessage_id()))){
                     lastMessage = messages.get(messages.size()-1);
-                    String name = SaveSharedPreferences.getPrefName(NotificationService.this);
+
 
                     if(!lastMessage.getMessage_name().equals(name)) {
-                        bildirimGonder(lastMessage);
-                        Log.e("isWorking","true");
+                        sendOnChannel();
                     }
                 }
                 loopNumber = loopNumber + 1;
@@ -73,7 +84,18 @@ public class NotificationService extends Service {
             @Override
             public void onCancelled(@NonNull DatabaseError error) { }
         });
-        return super.onStartCommand(intent, flags, startId);
+
+        startForeground(1,getNotification());
+        return START_STICKY;
+    }
+
+    private Notification getNotification() {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("My Foreground Service")
+                .setContentText("Running in the background")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        return builder.build();
     }
 
     @Nullable
@@ -81,50 +103,30 @@ public class NotificationService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
+    public void sendOnChannel(){
+        if(!isMessageSent){
 
-    private void bildirimGonder(ObjectMessage message){
-        NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+            String contentTitle = lastMessage.getMessage_name();
+            String contentText = lastMessage.getMessage();
+            id = id + 1;
+            Intent intent = new Intent(this,ChatActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),1,intent,PendingIntent.FLAG_IMMUTABLE);
 
-        Intent intent = new Intent(this,ChatActivity.class);
+            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setContentTitle(contentTitle)
+                    .setContentText(contentText)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent)
+                    .build();
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),1,intent,PendingIntent.FLAG_IMMUTABLE);
-        String contentTitle = "There is a message from %s!";
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
-
-            String channelID = message.getMessage_id();
-            String channelName = "New Message";
-            String channelDescription = "There is a new message";
-            int channelImportance = NotificationManager.IMPORTANCE_HIGH;
-
-            NotificationChannel channel = notificationManager.getNotificationChannel(channelID);
-
-            if (channel == null){
-                channel = new NotificationChannel(channelID,channelName,channelImportance);
-                channel.setDescription(channelDescription);
-                notificationManager.createNotificationChannel(channel);
-            }
-            builder = new NotificationCompat.Builder(getApplicationContext(),channelID);
+            notificationManager.notify(id,notification);
+            isMessageSent = true;
         }
         else{
-            builder = new NotificationCompat.Builder(getApplicationContext());
-            builder.setPriority(Notification.PRIORITY_DEFAULT);
+            isMessageSent = false;
         }
-
-        builder.setContentTitle(String.format(contentTitle, message.getMessage_name()));
-        builder.setContentText(message.getMessage());
-        builder.setAutoCancel(true);
-        builder.setOngoing(false);
-        builder.setGroup("CHAT_APP_NOTIFICATION");
-        builder.setSmallIcon(R.mipmap.ic_launcher_round);
-        builder.setContentIntent(pendingIntent);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(1,builder.build(),getForegroundServiceType());
-        }else{
-            notificationManager.notify(1,builder.build());
-        }
-
-        id++;
     }
 }
