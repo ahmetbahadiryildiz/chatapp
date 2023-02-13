@@ -5,6 +5,7 @@ import static com.greemlock.edutherapist.App.CHANNEL_ID;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
@@ -69,9 +70,8 @@ public class NotificationService extends Service {
                     if(!lastMessage.getMessage_name().equals(name)) {
                         sendOnChannel();
                     }
+
                 }
-                loopNumber = loopNumber + 1;
-                Log.e("loopNumber",String.valueOf(loopNumber));
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) { }
@@ -95,31 +95,32 @@ public class NotificationService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
-    public void sendOnChannel(){
-        if(!isMessageSent){
 
-            String contentTitle = lastMessage.getMessage_name();
-            String contentText = lastMessage.getMessage();
-            id = id + 1;
-            Intent intent = new Intent(this,ChatActivity.class);
+    public static void sendReply(Context context, String contentTitle, String contentText, int id){
+
+        String name = SaveSharedPreferences.getPrefName(context);
+
+        if(!(contentText.equals(name))){
+            Intent intent = new Intent(context,ChatActivity.class);
             PendingIntent pendingIntent =
-                    PendingIntent.getActivity(getApplicationContext(),1,intent,PendingIntent.FLAG_IMMUTABLE);
+                    PendingIntent.getActivity(context,1,intent,PendingIntent.FLAG_IMMUTABLE);
 
             RemoteInput remoteInput = new RemoteInput.Builder("key_text_reply")
                     .setLabel("Reply")
                     .build();
-
-            Intent resultIntent = new Intent(getApplicationContext(), DirectReplyReceiver.class);
+            Intent resultIntent = new Intent(context, DirectReplyReceiver.class);
             PendingIntent resultPendingIntent =
-                    PendingIntent.getBroadcast(getApplicationContext(), 0, resultIntent,PendingIntent.FLAG_NO_CREATE);
-
+                    PendingIntent.getBroadcast(context,
+                            0,
+                            resultIntent,
+                            PendingIntent.FLAG_MUTABLE);
             NotificationCompat.Action replyAction = new NotificationCompat.Action.Builder(
                     R.mipmap.ic_launcher,
                     "Reply",
                     resultPendingIntent
-                    ).addRemoteInput(remoteInput).build();
+            ).addRemoteInput(remoteInput).build();
 
-            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+            Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
                     .setSmallIcon(R.mipmap.ic_launcher)
                     .addAction(replyAction)
                     .setContentTitle(contentTitle)
@@ -129,8 +130,19 @@ public class NotificationService extends Service {
                     .setAutoCancel(true)
                     .setContentIntent(pendingIntent)
                     .build();
-
+            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
             notificationManager.notify(id,notification);
+        }
+
+    }
+
+    public void sendOnChannel(){
+        if(!isMessageSent){
+
+            String contentTitle = lastMessage.getMessage_name();
+            String contentText = lastMessage.getMessage();
+            id = id + 1;
+            sendReply(this,contentTitle,contentText,id);
             isMessageSent = true;
         }
         else{

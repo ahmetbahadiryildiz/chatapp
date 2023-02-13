@@ -1,5 +1,6 @@
 package com.greemlock.edutherapist;
 
+import android.app.NotificationManager;
 import android.app.RemoteInput;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -25,8 +27,9 @@ public class DirectReplyReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
+        int id = intent.getIntExtra("id",1);
 
-        String name = SaveSharedPreferences.getPrefName(context.getApplicationContext());
+        String name = SaveSharedPreferences.getPrefName(context);
         Date currentDate = Calendar.getInstance().getTime();
 
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
@@ -57,8 +60,9 @@ public class DirectReplyReceiver extends BroadcastReceiver {
             public void onCancelled(@NonNull DatabaseError error) {
             }
         });
+        NotificationService.sendReply(context,newMessage.getMessage_name(),newMessage.getMessage(),id);
 
-        abortBroadcast();
-
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.cancel(id);
     }
 }
