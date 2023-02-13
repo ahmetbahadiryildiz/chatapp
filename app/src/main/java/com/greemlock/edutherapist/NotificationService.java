@@ -3,24 +3,17 @@ package com.greemlock.edutherapist;
 import static com.greemlock.edutherapist.App.CHANNEL_ID;
 
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ServiceInfo;
-import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.RemoteInput;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -28,7 +21,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 
 public class NotificationService extends Service {
@@ -85,7 +77,7 @@ public class NotificationService extends Service {
             public void onCancelled(@NonNull DatabaseError error) { }
         });
 
-        startForeground(1,getNotification());
+        startForeground(9999,getNotification());
         return START_STICKY;
     }
 
@@ -110,10 +102,26 @@ public class NotificationService extends Service {
             String contentText = lastMessage.getMessage();
             id = id + 1;
             Intent intent = new Intent(this,ChatActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),1,intent,PendingIntent.FLAG_IMMUTABLE);
+            PendingIntent pendingIntent =
+                    PendingIntent.getActivity(getApplicationContext(),1,intent,PendingIntent.FLAG_IMMUTABLE);
+
+            RemoteInput remoteInput = new RemoteInput.Builder("key_text_reply")
+                    .setLabel("Reply")
+                    .build();
+
+            Intent resultIntent = new Intent(getApplicationContext(), DirectReplyReceiver.class);
+            PendingIntent resultPendingIntent =
+                    PendingIntent.getBroadcast(getApplicationContext(), 0, resultIntent,PendingIntent.FLAG_NO_CREATE);
+
+            NotificationCompat.Action replyAction = new NotificationCompat.Action.Builder(
+                    R.mipmap.ic_launcher,
+                    "Reply",
+                    resultPendingIntent
+                    ).addRemoteInput(remoteInput).build();
 
             Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                     .setSmallIcon(R.mipmap.ic_launcher)
+                    .addAction(replyAction)
                     .setContentTitle(contentTitle)
                     .setContentText(contentText)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
