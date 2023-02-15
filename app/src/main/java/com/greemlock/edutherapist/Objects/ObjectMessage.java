@@ -1,4 +1,4 @@
-package com.greemlock.edutherapist;
+package com.greemlock.edutherapist.Objects;
 
 import java.io.Serializable;
 

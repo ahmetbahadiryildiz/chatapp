@@ -1,22 +1,22 @@
 package com.greemlock.edutherapist;
 
-import android.app.NotificationManager;
 import android.app.RemoteInput;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationManagerCompat;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.greemlock.edutherapist.Objects.ObjectMessage;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -29,7 +29,7 @@ public class DirectReplyReceiver extends BroadcastReceiver {
         Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
         int id = intent.getIntExtra("id",1);
 
-        String name = SaveSharedPreferences.getPrefName(context);
+        String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
         Date currentDate = Calendar.getInstance().getTime();
 
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
@@ -63,6 +63,6 @@ public class DirectReplyReceiver extends BroadcastReceiver {
         NotificationService.sendReply(context,newMessage.getMessage_name(),newMessage.getMessage(),id);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        notificationManager.cancel(id);
+        notificationManager.cancelAll();
     }
 }

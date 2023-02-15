@@ -9,22 +9,28 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.greemlock.edutherapist.Adapter.MessageRecyclerAdapter;
+import com.greemlock.edutherapist.Objects.ObjectMessage;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
@@ -38,17 +44,18 @@ public class ChatActivity extends AppCompatActivity {
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference("messages");
 
-        String name = SaveSharedPreferences.getPrefName(ChatActivity.this);
+
         Button button = findViewById(R.id.buttonChat);
         EditText editText = findViewById(R.id.editTestMessage);
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
-
-
         RecyclerView recyclerView = findViewById(R.id.recyclerViewChat);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String name = user.getDisplayName();
 
         ArrayList<ObjectMessage> messageList = new ArrayList();
         databaseReference.addValueEventListener(new ValueEventListener() {
@@ -121,7 +128,11 @@ public class ChatActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 Toast.makeText(this, "You logged out!", Toast.LENGTH_SHORT).show();
-                SaveSharedPreferences.setPrefName(this,"");
+                FirebaseAuth.getInstance().signOut();
+
+                Intent intent = new Intent(ChatActivity.this, NotificationService.class);
+                stopService(intent);
+
                 this.finish();
                 return true;
         }

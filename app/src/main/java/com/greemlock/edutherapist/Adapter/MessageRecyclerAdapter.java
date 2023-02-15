@@ -1,4 +1,4 @@
-package com.greemlock.edutherapist;
+package com.greemlock.edutherapist.Adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,6 +9,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.greemlock.edutherapist.Objects.ObjectMessage;
+import com.greemlock.edutherapist.R;
 
 import java.util.List;
 public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -97,10 +102,10 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     @Override
     public int getItemViewType(int position) {
         final ObjectMessage objectMessage = messages.get(position);
-        String username = SaveSharedPreferences.getPrefName(context.getApplicationContext());
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        String username = user.getDisplayName();
 
         if(username.equals(objectMessage.getMessage_name())){
-
             return 1;
         }
         else{
