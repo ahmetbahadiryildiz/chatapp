@@ -17,12 +17,15 @@ import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.greemlock.edutherapist.Objects.ObjectMessage;
+import com.greemlock.edutherapist.Objects.User;
 
 import java.util.ArrayList;
 
@@ -36,6 +39,7 @@ public class NotificationService extends Service {
     int id;
     boolean isMessageSent;
     String name;
+    ChatActivity chatActivity = new ChatActivity();
 
     @Override
     public void onCreate() {
@@ -62,15 +66,21 @@ public class NotificationService extends Service {
                     ObjectMessage objectMessage = dataSnapshot.getValue(ObjectMessage.class);
                     messages.add(objectMessage);
                 }
-                if (!(messages.get(messages.size()-1).getMessage_id().equals(lastMessage.getMessage_id()))){
-                    lastMessage = messages.get(messages.size()-1);
 
+                if (messages.size()>0){
+                    if (!(messages.get(messages.size()-1).getMessage_id().equals(lastMessage.getMessage_id()))){
+                        lastMessage = messages.get(messages.size()-1);
 
-                    if(!lastMessage.getMessage_name().equals(name)) {
-                        sendOnChannel();
+                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        String messageSender = lastMessage.getMessage_uid();
+
+                        if(!messageSender.equals(user.getUid())) {
+                            sendOnChannel();
+                        }
+
                     }
-
                 }
+
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) { }
@@ -143,12 +153,24 @@ public class NotificationService extends Service {
 
     public void sendOnChannel(){
         if(!isMessageSent){
+            DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
+            Query findUserName = databaseReference.orderByChild("userUID").equalTo(lastMessage.getMessage_uid());
+            findUserName.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for(DataSnapshot dataSnapshot: snapshot.getChildren()){
+                        String contentTitle = dataSnapshot.getValue(User.class).getUserDisplayName();
+                        String contentText = lastMessage.getMessage();
+                        id = id + 1;
+                        sendReply(getApplicationContext(),contentTitle,contentText,id);
+                        isMessageSent = true;
+                    }
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
 
-            String contentTitle = lastMessage.getMessage_name();
-            String contentText = lastMessage.getMessage();
-            id = id + 1;
-            sendReply(this,contentTitle,contentText,id);
-            isMessageSent = true;
+                }
+            });
         }
         else{
             isMessageSent = false;

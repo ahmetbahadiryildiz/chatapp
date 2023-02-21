@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,15 +26,17 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.greemlock.edutherapist.Adapter.MessageRecyclerAdapter;
 import com.greemlock.edutherapist.Objects.ObjectMessage;
+import com.greemlock.edutherapist.Objects.User;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
+
+    User theUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +92,7 @@ public class ChatActivity extends AppCompatActivity {
 
             if(!message.equals("")){
                 Date currentDate = Calendar.getInstance().getTime();
-                ObjectMessage newMessage = new ObjectMessage("",name,message,currentDate.toString());
+                ObjectMessage newMessage = new ObjectMessage("", user.getUid(), message,currentDate.toString());
 
                 databaseReference.push().setValue(newMessage);
 
@@ -126,17 +129,29 @@ public class ChatActivity extends AppCompatActivity {
 
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.profileItem:
+                Intent intent =new Intent(this,ProfileActivity.class);
+                startActivity(intent);
+                return true;
             case android.R.id.home:
                 Toast.makeText(this, "You logged out!", Toast.LENGTH_SHORT).show();
                 FirebaseAuth.getInstance().signOut();
 
-                Intent intent = new Intent(ChatActivity.this, NotificationService.class);
-                stopService(intent);
+                Intent stopService = new Intent(ChatActivity.this, NotificationService.class);
+                stopService(stopService);
 
                 this.finish();
                 return true;
+
         }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.actionbar,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
 
 }

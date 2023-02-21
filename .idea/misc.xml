@@ -6,16 +6,21 @@
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.157" />
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/drawable/ic_baseline_chat_bubble_24.xml" value="0.157" />
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/drawable/ic_baseline_person_24.xml" value="0.1785" />
+        <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/drawable/ic_baseline_profile.xml" value="0.1135" />
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/drawable/ic_launcher_background.xml" value="0.124" />
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.157" />
-        <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/layout/activity_chat.xml" value="0.4" />
+        <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/layout/activity_chat.xml" value="0.2982005141388175" />
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/layout/activity_main.xml" value="0.1" />
+        <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/layout/activity_profile.xml" value="0.4" />
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/layout/fragment_login.xml" value="0.4" />
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/layout/fragment_register.xml" value="0.4" />
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/layout/message_layout.xml" value="0.4" />
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/layout/message_layout_my_messages.xml" value="0.4" />
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/layout/message_layout_recycler.xml" value="0.3290155440414508" />
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/layout/message_layout_recycler_my_messages.xml" value="0.3958333333333333" />
+        <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/layout/pop_up_reset_password.xml" value="0.536" />
+        <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/menu/actionbar.xml" value="0.536" />
+        <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/menu/actionbar_profile.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/AHMET BAHADIR YILDIZ/AndroidStudioProjects/EduTherapist/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.157" />
       </map>
     </option>

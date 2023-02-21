@@ -5,64 +5,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/tv_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Name"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/et_name_register"
-        app:layout_constraintStart_toStartOf="@+id/et_name_register" />
-
     <EditText
         android:id="@+id/et_name_register"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="24dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="24dp"
         android:ems="10"
         android:hint="Type your name..."
         android:inputType="none|textPersonName"
-        android:minHeight="48dp"
+        android:minHeight="36dp"
         app:layout_constraintBottom_toTopOf="@+id/tv_email"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/tv_email"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Email"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/et_email_register"
-        app:layout_constraintStart_toStartOf="@+id/et_email_register" />
-
-    <EditText
-        android:id="@+id/et_email_register"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="32dp"
-        android:ems="10"
-        android:hint="Type your email..."
-        android:inputType="none|textWebEmailAddress"
-        android:minHeight="48dp"
-        app:layout_constraintBottom_toTopOf="@+id/tv_password"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/tv_password"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Password"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/et_password_register"
-        app:layout_constraintStart_toStartOf="@+id/et_password_register" />
 
     <EditText
         android:id="@+id/et_password_register"
@@ -70,15 +27,64 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="24dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="28dp"
         android:ems="10"
         android:hint="Type your password..."
         android:inputType="none|textPassword"
-        android:minHeight="48dp"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        android:minHeight="36dp"
+        app:layout_constraintBottom_toTopOf="@+id/iv_photo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <EditText
+        android:id="@+id/et_email_register"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="28dp"
+        android:ems="10"
+        android:hint="Type your email..."
+        android:inputType="none|textWebEmailAddress"
+        android:minHeight="36dp"
+        app:layout_constraintBottom_toTopOf="@+id/tv_password"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="4dp"
+        android:text="Name"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/et_name_register"
+        app:layout_constraintStart_toStartOf="@+id/et_name_register" />
+
+    <TextView
+        android:id="@+id/tv_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="4dp"
+        android:text="Password"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/et_password_register"
+        app:layout_constraintStart_toStartOf="@+id/et_password_register" />
+
+    <TextView
+        android:id="@+id/tv_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="4dp"
+        android:text="Email"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/et_email_register"
+        app:layout_constraintStart_toStartOf="@+id/et_email_register" />
 
     <Button
         android:id="@+id/button"
@@ -90,4 +96,25 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/iv_photo"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginBottom="28dp"
+        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintStart_toStartOf="@+id/et_password_register"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <Button
+        android:id="@+id/b_addPhoto"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Select Photo"
+        android:textColor="@color/black"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_photo"
+        app:layout_constraintEnd_toEndOf="@+id/et_password_register"
+        app:layout_constraintStart_toEndOf="@+id/iv_photo"
+        app:layout_constraintTop_toTopOf="@+id/iv_photo" />
 </androidx.constraintlayout.widget.ConstraintLayout>

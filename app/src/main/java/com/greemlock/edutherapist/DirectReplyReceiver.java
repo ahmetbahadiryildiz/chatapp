@@ -10,13 +10,16 @@ import androidx.annotation.NonNull;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.greemlock.edutherapist.Adapter.MessageRecyclerAdapter;
 import com.greemlock.edutherapist.Objects.ObjectMessage;
+import com.greemlock.edutherapist.Objects.User;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -29,13 +32,13 @@ public class DirectReplyReceiver extends BroadcastReceiver {
         Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
         int id = intent.getIntExtra("id",1);
 
-        String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+        FirebaseUser name = FirebaseAuth.getInstance().getCurrentUser();
         Date currentDate = Calendar.getInstance().getTime();
 
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference("messages");
 
-        ObjectMessage newMessage = new ObjectMessage("",name,remoteInput.getCharSequence("key_text_reply").toString(),currentDate.toString());
+        ObjectMessage newMessage = new ObjectMessage("",name.getUid(), remoteInput.getCharSequence("key_text_reply").toString(),currentDate.toString());
         databaseReference.push().setValue(newMessage);
 
         Query addMessageId = databaseReference.orderByChild("message").equalTo(newMessage.getMessage());
@@ -60,7 +63,25 @@ public class DirectReplyReceiver extends BroadcastReceiver {
             public void onCancelled(@NonNull DatabaseError error) {
             }
         });
-        NotificationService.sendReply(context,newMessage.getMessage_name(),newMessage.getMessage(),id);
+        ChatActivity chatActivity = new ChatActivity();
+
+        DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference("users");
+        Query findUserName = databaseReference1.orderByChild("userUID").equalTo(newMessage.getMessage_uid());
+
+        findUserName.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for(DataSnapshot dataSnapshot: snapshot.getChildren()){
+                    NotificationService.sendReply(context,dataSnapshot.getValue(User.class).getUserDisplayName(),newMessage.getMessage(),id);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.cancelAll();

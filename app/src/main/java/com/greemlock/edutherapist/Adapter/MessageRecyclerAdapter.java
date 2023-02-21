@@ -1,6 +1,7 @@
 package com.greemlock.edutherapist.Adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,13 +13,24 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+import com.greemlock.edutherapist.ChatActivity;
 import com.greemlock.edutherapist.Objects.ObjectMessage;
+import com.greemlock.edutherapist.Objects.User;
 import com.greemlock.edutherapist.R;
 
 import java.util.List;
 public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context context;
     private List<ObjectMessage> messages;
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    String name;
+
 
     public MessageRecyclerAdapter(Context context, List<ObjectMessage> messages){
         this.context = context;
@@ -74,11 +86,27 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         final ObjectMessage objectMessage = messages.get(position);
+        ChatActivity chatActivity = new ChatActivity();
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
+        Query findUserName = databaseReference.orderByChild("userUID").equalTo(objectMessage.getMessage_uid());
 
         switch (holder.getItemViewType()) {
             case 0:
+
                 ViewHolder0 viewHolder0 = (ViewHolder0)holder;
-                viewHolder0.name.setText(objectMessage.getMessage_name());
+                findUserName.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for(DataSnapshot dataSnapshot: snapshot.getChildren()){
+                            viewHolder0.name.setText(dataSnapshot.getValue(User.class).getUserDisplayName());
+                        }
+                    }
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
                 viewHolder0.message.setText(objectMessage.getMessage());
                 viewHolder0.date.setText(objectMessage.getMessage_date());
                 viewHolder0.imageView.setImageResource(R.drawable.ic_baseline_person_24);
@@ -86,10 +114,10 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
             case 1:
                 ViewHolder1 viewHolder1 = (ViewHolder1)holder;
-                viewHolder1.name.setText(objectMessage.getMessage_name());
+                viewHolder1.name.setText(user.getDisplayName());
                 viewHolder1.message.setText(objectMessage.getMessage());
                 viewHolder1.date.setText(objectMessage.getMessage_date());
-                viewHolder1.imageView.setImageResource(R.drawable.ic_baseline_person_24);
+                viewHolder1.imageView.setImageURI(user.getPhotoUrl());
                 break;
         }
     }
@@ -103,9 +131,9 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     public int getItemViewType(int position) {
         final ObjectMessage objectMessage = messages.get(position);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        String username = user.getDisplayName();
+        String userUid = user.getUid();
 
-        if(username.equals(objectMessage.getMessage_name())){
+        if(userUid.equals(objectMessage.getMessage_uid())){
             return 1;
         }
         else{
