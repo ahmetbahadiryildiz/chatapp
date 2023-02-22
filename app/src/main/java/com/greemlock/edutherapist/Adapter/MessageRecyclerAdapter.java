@@ -1,16 +1,21 @@
 package com.greemlock.edutherapist.Adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -19,11 +24,15 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.greemlock.edutherapist.ChatActivity;
 import com.greemlock.edutherapist.Objects.ObjectMessage;
 import com.greemlock.edutherapist.Objects.User;
 import com.greemlock.edutherapist.R;
 
+import java.io.File;
 import java.util.List;
 public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context context;
@@ -95,21 +104,36 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             case 0:
 
                 ViewHolder0 viewHolder0 = (ViewHolder0)holder;
-                findUserName.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for(DataSnapshot dataSnapshot: snapshot.getChildren()){
-                            viewHolder0.name.setText(dataSnapshot.getValue(User.class).getUserDisplayName());
-                        }
-                    }
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+                viewHolder0.name.setText(objectMessage.getMessage_name());
 
-                    }
-                });
+                FirebaseStorage fb_storage = FirebaseStorage.getInstance();
+                StorageReference s_reference = fb_storage.getReference();
+                StorageReference sr_offer_company_photo = s_reference.child("profilePhotos/" + objectMessage.getMessage_uid());
+
+                try {
+                    File file = File.createTempFile("images","jpg");
+                    sr_offer_company_photo.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                            String s_file_path = file.getPath();
+                            Bitmap bm = BitmapFactory.decodeFile(s_file_path);
+                            viewHolder0.imageView.setImageBitmap(bm);
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            viewHolder0.imageView.setImageResource(R.drawable.ic_baseline_person_24);
+                        }
+                    });
+                }
+                catch (Exception e){
+                    Log.e("hata",e.getMessage());
+
+                }
+
                 viewHolder0.message.setText(objectMessage.getMessage());
                 viewHolder0.date.setText(objectMessage.getMessage_date());
-                viewHolder0.imageView.setImageResource(R.drawable.ic_baseline_person_24);
+
                 break;
 
             case 1:
@@ -117,7 +141,36 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 viewHolder1.name.setText(user.getDisplayName());
                 viewHolder1.message.setText(objectMessage.getMessage());
                 viewHolder1.date.setText(objectMessage.getMessage_date());
-                viewHolder1.imageView.setImageURI(user.getPhotoUrl());
+                if (user.getPhotoUrl() == null){
+
+                    fb_storage = FirebaseStorage.getInstance();
+                    s_reference = fb_storage.getReference();
+                    sr_offer_company_photo = s_reference.child("profilePhotos/" + user.getUid());
+
+                    try {
+                        File file = File.createTempFile("images","jpg");
+                        sr_offer_company_photo.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                String s_file_path = file.getPath();
+                                Bitmap bm = BitmapFactory.decodeFile(s_file_path);
+                                viewHolder1.imageView.setImageBitmap(bm);
+
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                viewHolder1.imageView.setImageResource(R.drawable.ic_baseline_person_24);
+                            }
+                        });
+                    }
+                    catch (Exception e){}
+
+
+                }else{
+                    viewHolder1.imageView.setImageURI(user.getPhotoUrl());
+                }
+
                 break;
         }
     }

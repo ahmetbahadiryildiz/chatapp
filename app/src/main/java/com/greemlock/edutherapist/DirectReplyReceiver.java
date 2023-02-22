@@ -38,7 +38,7 @@ public class DirectReplyReceiver extends BroadcastReceiver {
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference("messages");
 
-        ObjectMessage newMessage = new ObjectMessage("",name.getUid(), remoteInput.getCharSequence("key_text_reply").toString(),currentDate.toString());
+        ObjectMessage newMessage = new ObjectMessage("",name.getUid(), name.getDisplayName(),remoteInput.getCharSequence("key_text_reply").toString(),currentDate.toString());
         databaseReference.push().setValue(newMessage);
 
         Query addMessageId = databaseReference.orderByChild("message").equalTo(newMessage.getMessage());

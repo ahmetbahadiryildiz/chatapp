@@ -36,13 +36,13 @@ import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
 
-    User theUser;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference("messages");
@@ -57,7 +57,6 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         String name = user.getDisplayName();
 
         ArrayList<ObjectMessage> messageList = new ArrayList();
@@ -92,7 +91,7 @@ public class ChatActivity extends AppCompatActivity {
 
             if(!message.equals("")){
                 Date currentDate = Calendar.getInstance().getTime();
-                ObjectMessage newMessage = new ObjectMessage("", user.getUid(), message,currentDate.toString());
+                ObjectMessage newMessage = new ObjectMessage("", user.getUid(), user.getDisplayName(), message,currentDate.toString());
 
                 databaseReference.push().setValue(newMessage);
 
@@ -125,6 +124,46 @@ public class ChatActivity extends AppCompatActivity {
                 Toast.makeText(this, "You cannot send blank message...", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        Toast.makeText(this, "anan", Toast.LENGTH_SHORT).show();
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        RecyclerView recyclerView = findViewById(R.id.recyclerViewChat);
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("messages");
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        String name = user.getDisplayName();
+
+        ArrayList<ObjectMessage> messageList = new ArrayList();
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                messageList.clear();
+                for(DataSnapshot dataSnapshot:snapshot.getChildren()){
+                    ObjectMessage objectMessage = dataSnapshot.getValue(ObjectMessage.class);
+                    boolean isInList = false;
+                    for(ObjectMessage oldMessage:messageList){
+                        if(oldMessage.getMessage_id().equals(objectMessage.getMessage_id())){
+                            isInList = true;
+                            break;
+                        }
+                    }
+                    if (!isInList){messageList.add(objectMessage);}
+                }
+                MessageRecyclerAdapter messageRecyclerAdapter = new MessageRecyclerAdapter(ChatActivity.this,messageList);
+                recyclerView.setAdapter(messageRecyclerAdapter);
+                recyclerView.scrollToPosition(messageList.size()-1);
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+        super.onResume();
     }
 
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {

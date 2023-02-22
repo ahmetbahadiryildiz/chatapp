@@ -38,6 +38,10 @@ public class ProfileActivity extends AppCompatActivity {
 
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.settingsItem:
+                Intent intent =new Intent(this,EditActivity.class);
+                startActivity(intent);
+                return true;
             case android.R.id.home:
                 this.finish();
                 return true;

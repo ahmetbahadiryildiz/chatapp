@@ -38,6 +38,7 @@ import com.greemlock.edutherapist.Objects.User;
 import com.greemlock.edutherapist.R;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 public class RegisterFragment extends Fragment {
 
@@ -73,54 +74,68 @@ public class RegisterFragment extends Fragment {
             @Override
             public void onClick(View view) {
 
-                String user_name = et_name.getText().toString();
-                String user_email = et_email.getText().toString();
-                String user_password = et_password.getText().toString();
+                try {
+                    String user_name = et_name.getText().toString();
+                    String user_email = et_email.getText().toString();
+                    String user_password = et_password.getText().toString();
 
-                mAuth.createUserWithEmailAndPassword(user_email, user_password)
-                        .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                            @Override
-                            public void onSuccess(AuthResult authResult) {
-                                UserProfileChangeRequest userProfileChangeRequest = new UserProfileChangeRequest.Builder()
-                                        .setDisplayName(user_name)
-                                        .setPhotoUri(getImageUri(getActivity(),croppedImage))
-                                        .build();
-                                FirebaseUser firebaseUser = authResult.getUser();
-                                firebaseUser.updateProfile(userProfileChangeRequest);
-                            }
-                        })
-                        .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-
-                                    FirebaseUser user = mAuth.getCurrentUser();
-                                    user.sendEmailVerification();
-
-                                    User newUser = new User(user.getUid(),user_name,user.getEmail());
-                                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
-                                    databaseReference.push().setValue(newUser);
-
-                                    if (profile_photo != null){
-
-                                        StorageReference storageReference = FirebaseStorage.getInstance().getReference();
-                                        StorageReference storageReferenceProfile   = storageReference.child("profilePhotos/" + user.getUid());
-                                        storageReferenceProfile.putFile(profile_photo);
+                    mAuth.createUserWithEmailAndPassword(user_email, user_password)
+                            .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                                @Override
+                                public void onSuccess(AuthResult authResult) {
+                                    UserProfileChangeRequest request;
+                                    if (croppedImage == null){
+                                        request = new UserProfileChangeRequest.Builder()
+                                                .setDisplayName(user_name)
+                                                .build();
+                                    }else{
+                                        request = new UserProfileChangeRequest.Builder()
+                                                .setDisplayName(user_name)
+                                                .setPhotoUri(getImageUri(getActivity(),croppedImage))
+                                                .build();
 
                                     }
-
-                                    Toast.makeText(getActivity(), String.format("The verification link is sent to your email!"), Toast.LENGTH_SHORT).show();
-
-                                    et_email.setText("");
-                                    et_password.setText("");
-                                    et_name.setText("");
-                                    imageView.setImageDrawable(null);
-
-                                } else {
-                                    Toast.makeText(getActivity(), "Authentication failed.", Toast.LENGTH_SHORT).show();
+                                    FirebaseUser firebaseUser = authResult.getUser();
+                                    firebaseUser.updateProfile(request);
                                 }
-                            }
-                        });
+                            })
+                            .addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(@NonNull Task<AuthResult> task) {
+                                    if (task.isSuccessful()) {
+                                        FirebaseUser user = mAuth.getCurrentUser();
+                                        user.sendEmailVerification();
+
+                                        User newUser = new User(user.getUid(),user_name,user_email);
+                                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
+                                        databaseReference.push().setValue(newUser);
+
+                                        if (croppedImage != null){
+
+                                            StorageReference storageReference = FirebaseStorage.getInstance().getReference();
+                                            StorageReference storageReferenceProfile   = storageReference.child("profilePhotos/" + user.getUid());
+                                            storageReferenceProfile.putFile(getImageUri(getActivity(),croppedImage));
+
+                                        }
+
+                                        Toast.makeText(getActivity(), String.format("The verification link is sent to your email!"), Toast.LENGTH_SHORT).show();
+
+                                        et_email.setText("");
+                                        et_password.setText("");
+                                        et_name.setText("");
+                                        imageView.setImageDrawable(null);
+
+                                    } else {
+                                        Toast.makeText(getActivity(), task.getException().getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            });
+                }catch (Exception e){
+                    Toast.makeText(getActivity(), e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+
+                }
+
+
             }
         });
 
