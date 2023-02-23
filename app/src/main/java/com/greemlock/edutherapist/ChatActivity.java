@@ -128,11 +128,11 @@ public class ChatActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        Toast.makeText(this, "anan", Toast.LENGTH_SHORT).show();
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         RecyclerView recyclerView = findViewById(R.id.recyclerViewChat);
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("messages");
+
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 

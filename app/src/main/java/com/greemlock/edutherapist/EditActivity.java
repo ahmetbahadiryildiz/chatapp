@@ -53,7 +53,6 @@ public class EditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit);
 
         EditText et_name = findViewById(R.id.et_name_register);
-
         Button button_register = findViewById(R.id.buttonEdit);
         Button b_addPhoto = findViewById(R.id.b_addPhoto);
         imageView = findViewById(R.id.iv_photo);
@@ -68,6 +67,7 @@ public class EditActivity extends AppCompatActivity {
                 startActivityForResult(intent, RESULT_LOAD_IMAGE);
             }
         });
+
         mAuth = FirebaseAuth.getInstance();
         button_register.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -89,7 +89,7 @@ public class EditActivity extends AppCompatActivity {
                             @Override
                             public void onComplete(@NonNull Task<Void> task) {
                                 if (task.isSuccessful()) {
-                                    User changedUser = new User(user.getUid(),et_name.getText().toString(), user.getEmail());
+
                                     DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
                                     Query changeData = databaseReference.orderByChild("userUID").equalTo(user.getUid());
                                     changeData.addListenerForSingleValueEvent(new ValueEventListener() {

@@ -39,6 +39,7 @@ import com.greemlock.edutherapist.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 public class RegisterFragment extends Fragment {
 
@@ -106,7 +107,7 @@ public class RegisterFragment extends Fragment {
                                         FirebaseUser user = mAuth.getCurrentUser();
                                         user.sendEmailVerification();
 
-                                        User newUser = new User(user.getUid(),user_name,user_email);
+                                        User newUser = new User(user.getUid(),user_name,user_email, new ArrayList<>());
                                         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
                                         databaseReference.push().setValue(newUser);
 

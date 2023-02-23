@@ -1,17 +1,24 @@
 package com.greemlock.edutherapist.Adapter;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -33,13 +40,19 @@ import com.greemlock.edutherapist.Objects.User;
 import com.greemlock.edutherapist.R;
 
 import java.io.File;
+import java.lang.invoke.ConstantCallSite;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context context;
     private List<ObjectMessage> messages;
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-    String name;
-
+    private AlertDialog.Builder dialogBuilder;
+    private AlertDialog dialog;
+    Bitmap bm;
 
     public MessageRecyclerAdapter(Context context, List<ObjectMessage> messages){
         this.context = context;
@@ -51,6 +64,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         public TextView message;
         public TextView date;
         public ImageView imageView;
+        public ConstraintLayout constraintLayout;
 
         public ViewHolder0(@NonNull View itemView){
             super(itemView);
@@ -58,6 +72,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             message = itemView.findViewById(R.id.message);
             date = itemView.findViewById(R.id.date);
             imageView = itemView.findViewById(R.id.imageView);
+            constraintLayout = itemView.findViewById(R.id.constraintLayout);
         }
     }
 
@@ -66,6 +81,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         public TextView message;
         public TextView date;
         public ImageView imageView;
+        public ConstraintLayout constraintLayout;
 
         public ViewHolder1(@NonNull View itemView){
             super(itemView);
@@ -73,6 +89,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             message = itemView.findViewById(R.id.message);
             date = itemView.findViewById(R.id.date);
             imageView = itemView.findViewById(R.id.imageView);
+            constraintLayout = itemView.findViewById(R.id.constraintLayout);
         }
     }
     @NonNull
@@ -95,10 +112,6 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         final ObjectMessage objectMessage = messages.get(position);
-        ChatActivity chatActivity = new ChatActivity();
-
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
-        Query findUserName = databaseReference.orderByChild("userUID").equalTo(objectMessage.getMessage_uid());
 
         switch (holder.getItemViewType()) {
             case 0:
@@ -110,18 +123,20 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 StorageReference s_reference = fb_storage.getReference();
                 StorageReference sr_offer_company_photo = s_reference.child("profilePhotos/" + objectMessage.getMessage_uid());
 
+
                 try {
                     File file = File.createTempFile("images","jpg");
                     sr_offer_company_photo.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                             String s_file_path = file.getPath();
-                            Bitmap bm = BitmapFactory.decodeFile(s_file_path);
+                            bm = BitmapFactory.decodeFile(s_file_path);
                             viewHolder0.imageView.setImageBitmap(bm);
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
+                            bm = null;
                             viewHolder0.imageView.setImageResource(R.drawable.ic_baseline_person_24);
                         }
                     });
@@ -133,6 +148,13 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
                 viewHolder0.message.setText(objectMessage.getMessage());
                 viewHolder0.date.setText(objectMessage.getMessage_date());
+                viewHolder0.constraintLayout.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        createNewContactDialog(objectMessage.getMessage_name(),bm,objectMessage.getMessage_uid());
+                        return false;
+                    }
+                });
 
                 break;
 
@@ -141,6 +163,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 viewHolder1.name.setText(user.getDisplayName());
                 viewHolder1.message.setText(objectMessage.getMessage());
                 viewHolder1.date.setText(objectMessage.getMessage_date());
+
                 if (user.getPhotoUrl() == null){
 
                     fb_storage = FirebaseStorage.getInstance();
@@ -170,9 +193,68 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 }else{
                     viewHolder1.imageView.setImageURI(user.getPhotoUrl());
                 }
-
                 break;
         }
+    }
+
+    @SuppressLint("ResourceAsColor")
+    private void createNewContactDialog(String name, Bitmap bitmap, String uid) {
+        dialogBuilder = new AlertDialog.Builder(context);
+        final View contactPopupView = LayoutInflater.from(context).inflate(R.layout.pop_up_add_friend,null);
+
+        TextView tv_name = contactPopupView.findViewById(R.id.tv_name);
+        ImageView iv_profilePhoto = contactPopupView.findViewById(R.id.iv_profilePhoto);
+        Button b_addFriend = contactPopupView.findViewById(R.id.b_addFriend);
+
+        tv_name.setText(name);
+        iv_profilePhoto.setImageResource(R.drawable.ic_baseline_profile);
+        ArrayList<String> list;
+        b_addFriend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
+                Query getList = databaseReference.orderByChild("userUID").equalTo(user.getUid());
+                getList.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot dataSnapshot: snapshot.getChildren()){
+                            User userInfo = dataSnapshot.getValue(User.class);
+                            String messageKey = dataSnapshot.getKey();
+
+                            ArrayList<String> list = userInfo.getUserFriends();
+                            ArrayList<String> newList;
+                            if(list == null){
+                                newList = new ArrayList<>();
+                            }else{
+                                newList = list;
+                            }
+
+                            newList.add(uid);
+                            Map<String,Object> map = new HashMap<>();
+                            map.put("userFriends",newList);
+                            try {
+                                databaseReference.child(messageKey).updateChildren(map);
+                                Toast.makeText(context, "You added as a friend successfully.", Toast.LENGTH_SHORT).show();
+                            }catch (Exception e){
+                                Toast.makeText(context, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                            }
+
+                            dialog.cancel();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+            }
+        });
+
+        dialogBuilder.setView(contactPopupView);
+        dialog = dialogBuilder.create();
+        dialog.show();
+
     }
 
     @Override

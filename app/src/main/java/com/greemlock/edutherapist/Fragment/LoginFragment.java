@@ -2,6 +2,8 @@ package com.greemlock.edutherapist.Fragment;
 
 import static android.content.ContentValues.TAG;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -29,6 +32,10 @@ import com.greemlock.edutherapist.R;
 
 public class LoginFragment extends Fragment {
 
+    private AlertDialog.Builder dialogBuilder;
+    private AlertDialog dialog;
+    FirebaseAuth mAuth = FirebaseAuth.getInstance();
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -42,6 +49,7 @@ public class LoginFragment extends Fragment {
         EditText et_email = getActivity().findViewById(R.id.et_email);
         EditText et_password = getActivity().findViewById(R.id.et_password);
         Button button_login = getActivity().findViewById(R.id.button_login);
+        TextView tv_resetPassword = getActivity().findViewById(R.id.tv_resetPassword);
 
         button_login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,7 +85,37 @@ public class LoginFragment extends Fragment {
             }
         });
 
+        tv_resetPassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                createNewContactDialog();
+            }
+        });
+
     }
+
+    private void createNewContactDialog() {
+        dialogBuilder = new AlertDialog.Builder(getActivity());
+        final View contactPopupView = getLayoutInflater().inflate(R.layout.pop_up_reset_password,null);
+
+        EditText et_email = contactPopupView.findViewById(R.id.et_email);
+        Button b_resetPassword = contactPopupView.findViewById(R.id.b_resetPassword);
+
+        dialogBuilder.setView(contactPopupView);
+        dialog = dialogBuilder.create();
+        dialog.show();
+
+        b_resetPassword.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String user_mail = et_email.getText().toString();
+                mAuth.sendPasswordResetEmail(user_mail);
+                Toast.makeText(getActivity(), "Reset Mail is sent to your email.", Toast.LENGTH_SHORT).show();
+                dialog.cancel();
+            }
+        });
+    }
+
     public void loginActivity(FirebaseUser user){
 
         Intent intent = new Intent(getActivity(), NotificationService.class);
