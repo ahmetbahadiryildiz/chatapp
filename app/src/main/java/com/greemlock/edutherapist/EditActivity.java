@@ -132,6 +132,7 @@ public class EditActivity extends AppCompatActivity {
                     storageReferenceProfile.putFile(getImageUri(getApplicationContext(),croppedImage));
 
                 }
+                finish();
             }
         });
     }
@@ -148,24 +149,23 @@ public class EditActivity extends AppCompatActivity {
 
 
         if (requestCode == RESULT_LOAD_IMAGE) {
-
             if (data != null){
                 profile_photo = data.getData();
-                Intent cropIntent = new Intent("com.android.camera.action.CROP");
+
+                Intent cropIntent = new Intent(getApplicationContext(), CropActivity.class);
                 cropIntent.setDataAndType(profile_photo, "image/*");
-                cropIntent.putExtra("crop", "true");
-                cropIntent.putExtra("aspectX", 1);
-                cropIntent.putExtra("aspectY", 1);
-                cropIntent.putExtra("outputX", 256);
-                cropIntent.putExtra("outputY", 256);
                 cropIntent.putExtra("return-data", true);
-                startActivityForResult(cropIntent, RESULT_CROP_IMAGE);
+                startActivityForResult(cropIntent,RESULT_CROP_IMAGE);
+
+
             }
 
         }
+
         if (requestCode == RESULT_CROP_IMAGE){
             if (data != null){
                 Bundle extras = data.getExtras();
+                Log.e("data",extras.toString());
                 croppedImage = extras.getParcelable("data");
                 imageView.setImageBitmap(croppedImage);
             }

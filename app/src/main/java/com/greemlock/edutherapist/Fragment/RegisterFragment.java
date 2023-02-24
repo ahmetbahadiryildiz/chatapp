@@ -1,5 +1,8 @@
 package com.greemlock.edutherapist.Fragment;
 
+import static android.app.Activity.RESULT_OK;
+
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -20,6 +23,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.canhub.cropper.CropImage;
+import com.canhub.cropper.CropImageView;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -32,6 +37,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.greemlock.edutherapist.ChatActivity;
+import com.greemlock.edutherapist.CropActivity;
 import com.greemlock.edutherapist.MainActivity;
 import com.greemlock.edutherapist.NotificationService;
 import com.greemlock.edutherapist.Objects.User;
@@ -64,7 +70,6 @@ public class RegisterFragment extends Fragment {
         EditText et_name = getActivity().findViewById(R.id.et_name_register);
         EditText et_email = getActivity().findViewById(R.id.et_email_register);
         EditText et_password = getActivity().findViewById(R.id.et_password_register);
-
         Button button_register = getActivity().findViewById(R.id.button);
         Button b_addPhoto = getActivity().findViewById(R.id.b_addPhoto);
         imageView = getActivity().findViewById(R.id.iv_photo);
@@ -163,27 +168,53 @@ public class RegisterFragment extends Fragment {
 
 
         if (requestCode == RESULT_LOAD_IMAGE) {
-
             if (data != null){
                 profile_photo = data.getData();
-                Intent cropIntent = new Intent("com.android.camera.action.CROP");
+
+                Intent cropIntent = new Intent(getActivity(), CropActivity.class);
                 cropIntent.setDataAndType(profile_photo, "image/*");
-                cropIntent.putExtra("crop", "true");
-                cropIntent.putExtra("aspectX", 1);
-                cropIntent.putExtra("aspectY", 1);
-                cropIntent.putExtra("outputX", 256);
-                cropIntent.putExtra("outputY", 256);
                 cropIntent.putExtra("return-data", true);
-                startActivityForResult(cropIntent, RESULT_CROP_IMAGE);
+                startActivityForResult(cropIntent,RESULT_CROP_IMAGE);
+
+
             }
 
         }
+
         if (requestCode == RESULT_CROP_IMAGE){
             if (data != null){
                 Bundle extras = data.getExtras();
+                Log.e("data",extras.toString());
                 croppedImage = extras.getParcelable("data");
                 imageView.setImageBitmap(croppedImage);
             }
+
         }
+    }
+
+    private void createOnContactDialog() {
+
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+        final View contactPopupView = getLayoutInflater().inflate(R.layout.pop_up_crop_image,null);
+
+        CropImageView cropImageView = contactPopupView.findViewById(R.id.cropImageView);
+        Button b_cropImage = contactPopupView.findViewById(R.id.b_cropImage);
+
+        cropImageView.setImageUriAsync(profile_photo);
+        cropImageView.setAspectRatio(1,1);
+
+        dialogBuilder.setView(contactPopupView);
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.show();
+
+        b_cropImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                Bitmap croppedImage = cropImageView.getCroppedImage();
+                imageView.setImageBitmap(croppedImage);
+                dialog.cancel();
+            }
+        });
     }
 }

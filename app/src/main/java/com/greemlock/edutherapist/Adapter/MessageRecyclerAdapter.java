@@ -164,36 +164,28 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 viewHolder1.message.setText(objectMessage.getMessage());
                 viewHolder1.date.setText(objectMessage.getMessage_date());
 
-                if (user.getPhotoUrl() == null){
+                fb_storage = FirebaseStorage.getInstance();
+                s_reference = fb_storage.getReference();
+                sr_offer_company_photo = s_reference.child("profilePhotos/" + user.getUid());
 
-                    fb_storage = FirebaseStorage.getInstance();
-                    s_reference = fb_storage.getReference();
-                    sr_offer_company_photo = s_reference.child("profilePhotos/" + user.getUid());
+                try {
+                    File file = File.createTempFile("images","jpg");
+                    sr_offer_company_photo.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                            String s_file_path = file.getPath();
+                            Bitmap bm = BitmapFactory.decodeFile(s_file_path);
+                            viewHolder1.imageView.setImageBitmap(bm);
 
-                    try {
-                        File file = File.createTempFile("images","jpg");
-                        sr_offer_company_photo.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                String s_file_path = file.getPath();
-                                Bitmap bm = BitmapFactory.decodeFile(s_file_path);
-                                viewHolder1.imageView.setImageBitmap(bm);
-
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                viewHolder1.imageView.setImageResource(R.drawable.ic_baseline_person_24);
-                            }
-                        });
-                    }
-                    catch (Exception e){}
-
-
-                }else{
-                    viewHolder1.imageView.setImageURI(user.getPhotoUrl());
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            viewHolder1.imageView.setImageResource(R.drawable.ic_baseline_person_24);
+                        }
+                    });
                 }
-                break;
+                catch (Exception e){}
         }
     }
 

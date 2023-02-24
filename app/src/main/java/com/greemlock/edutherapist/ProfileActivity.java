@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Adapter;
@@ -59,6 +60,10 @@ public class ProfileActivity extends AppCompatActivity {
                     User user1 = dataSnapshot.getValue(User.class);
                     ArrayList<String> list = user1.getUserFriends();
                     if (list != null){
+
+                        for (String item: list){
+                            Log.e("item",item);
+                        }
                         ArrayAdapter adapter = new ArrayAdapter(getApplicationContext(), android.R.layout.simple_list_item_1,user1.getUserFriends());
                         list_friendsList.setAdapter(adapter);
                     }

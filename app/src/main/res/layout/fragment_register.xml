@@ -117,4 +117,5 @@
         app:layout_constraintEnd_toEndOf="@+id/et_password_register"
         app:layout_constraintStart_toEndOf="@+id/iv_photo"
         app:layout_constraintTop_toTopOf="@+id/iv_photo" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
