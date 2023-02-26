@@ -47,17 +47,4 @@ public class CropActivity extends AppCompatActivity {
             }
         });
     }
-
-    public Bitmap getResizedBitmap(Bitmap image, int maxSize) {
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-
-        float bitmapRatio = (float)width / (float) height;
-
-        height = maxSize;
-        width = (int) (height * bitmapRatio);
-
-        return Bitmap.createScaledBitmap(image, width, height, true);
-    }
 }

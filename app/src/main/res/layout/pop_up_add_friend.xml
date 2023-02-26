@@ -8,8 +8,8 @@
 
     <ImageView
         android:id="@+id/iv_profilePhoto"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,10 +21,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         android:textColor="@color/white"
         android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_profilePhoto"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/iv_profilePhoto"
         app:layout_constraintTop_toTopOf="@+id/iv_profilePhoto" />
@@ -33,12 +33,12 @@
         android:id="@+id/b_addFriend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:text="add frıend"
         android:textColor="@color/black"
-        app:layout_constraintStart_toStartOf="@+id/tv_name"
-        app:layout_constraintTop_toBottomOf="@+id/tv_name" />
+        app:layout_constraintEnd_toEndOf="@+id/tv_name"
+        app:layout_constraintStart_toStartOf="@+id/iv_profilePhoto"
+        app:layout_constraintTop_toBottomOf="@+id/iv_profilePhoto" />
 
     <Space
         android:layout_width="0dp"

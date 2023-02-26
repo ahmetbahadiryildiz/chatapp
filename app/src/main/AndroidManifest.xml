@@ -21,6 +21,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EduTherapist">
         <activity
+            android:name=".MessageActivity"
+            android:exported="false"
+            android:parentActivityName=".ProfileActivity"/>
+        <activity
             android:name=".CropActivity"
             android:exported="false" />
         <activity

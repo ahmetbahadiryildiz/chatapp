@@ -3,6 +3,7 @@ package com.greemlock.edutherapist.Adapter;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
@@ -53,6 +54,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     private AlertDialog.Builder dialogBuilder;
     private AlertDialog dialog;
     Bitmap bm;
+    boolean isfriend;
 
     public MessageRecyclerAdapter(Context context, List<ObjectMessage> messages){
         this.context = context;
@@ -153,6 +155,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                     public boolean onLongClick(View view) {
                         createNewContactDialog(objectMessage.getMessage_name(),bm,objectMessage.getMessage_uid());
                         return false;
+
                     }
                 });
 
@@ -199,18 +202,45 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
         Button b_addFriend = contactPopupView.findViewById(R.id.b_addFriend);
 
         tv_name.setText(name);
-        iv_profilePhoto.setImageResource(R.drawable.ic_baseline_profile);
-        ArrayList<String> list;
-        b_addFriend.setOnClickListener(new View.OnClickListener() {
+
+        StorageReference s_reference = FirebaseStorage.getInstance().getReference();
+        StorageReference sr_offer_company_photo = s_reference.child("profilePhotos/" + uid);
+
+        try {
+            File file = File.createTempFile("images", "jpg");
+            sr_offer_company_photo.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    String s_file_path = file.getPath();
+                    Bitmap bm = BitmapFactory.decodeFile(s_file_path);
+                    iv_profilePhoto.setImageBitmap(bm);
+
+                }
+            });
+        }
+        catch (Exception ex){}
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
+        Query isFriend = databaseReference.orderByChild("userUID").equalTo(user.getUid());
+        isFriend.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onClick(View view) {
-                DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
-                Query getList = databaseReference.orderByChild("userUID").equalTo(user.getUid());
-                getList.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot dataSnapshot: snapshot.getChildren()){
-                            User userInfo = dataSnapshot.getValue(User.class);
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for(DataSnapshot dataSnapshot: snapshot.getChildren()){
+                    User userInfo = dataSnapshot.getValue(User.class);
+                    if (userInfo.getUserFriends() != null){
+                        for(String friendUID : userInfo.getUserFriends()){
+                            if(uid.equals(friendUID)){
+                                b_addFriend.setVisibility(View.INVISIBLE);
+                                Toast.makeText(context, "You are already friends with this person", Toast.LENGTH_SHORT).show();
+                                b_addFriend.setClickable(false);
+                                return;
+                            }
+                        }
+                    }
+
+                    b_addFriend.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
                             String messageKey = dataSnapshot.getKey();
 
                             ArrayList<String> list = userInfo.getUserFriends();
@@ -233,13 +263,13 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
                             dialog.cancel();
                         }
-                    }
+                    });
+                }
+            }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
 
-                    }
-                });
             }
         });
 
