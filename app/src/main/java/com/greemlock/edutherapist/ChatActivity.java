@@ -47,7 +47,6 @@ public class ChatActivity extends AppCompatActivity {
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference("messages");
 
-
         Button button = findViewById(R.id.buttonChat);
         EditText editText = findViewById(R.id.editTestMessage);
 
@@ -57,41 +56,12 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        String name = user.getDisplayName();
-
-        ArrayList<ObjectMessage> messageList = new ArrayList();
-        databaseReference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                messageList.clear();
-                for(DataSnapshot dataSnapshot:snapshot.getChildren()){
-                    ObjectMessage objectMessage = dataSnapshot.getValue(ObjectMessage.class);
-                    boolean isInList = false;
-                    for(ObjectMessage oldMessage:messageList){
-                        if(oldMessage.getMessage_id().equals(objectMessage.getMessage_id())){
-                            isInList = true;
-                            break;
-                        }
-                    }
-                    if (!isInList){messageList.add(objectMessage);}
-                }
-                MessageRecyclerAdapter messageRecyclerAdapter = new MessageRecyclerAdapter(ChatActivity.this,messageList);
-                recyclerView.setAdapter(messageRecyclerAdapter);
-                recyclerView.scrollToPosition(messageList.size()-1);
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {}
-        });
-
-
         button.setOnClickListener(view -> {
             String message = editText.getText().toString();
 
             if(!message.equals("")){
                 Date currentDate = Calendar.getInstance().getTime();
-                ObjectMessage newMessage = new ObjectMessage("", user.getUid(), user.getDisplayName(), message,currentDate.toString());
+                ObjectMessage newMessage = new ObjectMessage("", user.getUid(),"", user.getDisplayName(), message,currentDate.toString());
 
                 databaseReference.push().setValue(newMessage);
 
@@ -129,14 +99,11 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         RecyclerView recyclerView = findViewById(R.id.recyclerViewChat);
         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("messages");
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        String name = user.getDisplayName();
 
         ArrayList<ObjectMessage> messageList = new ArrayList();
         databaseReference.addValueEventListener(new ValueEventListener() {
@@ -145,18 +112,17 @@ public class ChatActivity extends AppCompatActivity {
                 messageList.clear();
                 for(DataSnapshot dataSnapshot:snapshot.getChildren()){
                     ObjectMessage objectMessage = dataSnapshot.getValue(ObjectMessage.class);
-                    boolean isInList = false;
-                    for(ObjectMessage oldMessage:messageList){
-                        if(oldMessage.getMessage_id().equals(objectMessage.getMessage_id())){
-                            isInList = true;
-                            break;
-                        }
+                    if (objectMessage.getMessage_receiver_uid().equals("")){
+                        messageList.add(objectMessage);
                     }
-                    if (!isInList){messageList.add(objectMessage);}
+
                 }
                 MessageRecyclerAdapter messageRecyclerAdapter = new MessageRecyclerAdapter(ChatActivity.this,messageList);
                 recyclerView.setAdapter(messageRecyclerAdapter);
-                recyclerView.scrollToPosition(messageList.size()-1);
+                if (messageList.size() > 0){
+                    recyclerView.scrollToPosition(messageList.size()-1);
+                }
+
 
             }
 

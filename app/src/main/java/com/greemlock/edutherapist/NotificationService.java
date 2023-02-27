@@ -9,6 +9,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,25 +32,20 @@ import java.util.ArrayList;
 
 public class NotificationService extends Service {
 
-    FirebaseDatabase firebaseDatabase;
     DatabaseReference databaseReference;
     ArrayList<ObjectMessage> messages;
     ObjectMessage lastMessage;
-    int loopNumber;
     int id;
     boolean isMessageSent;
     String name;
-    ChatActivity chatActivity = new ChatActivity();
 
     @Override
     public void onCreate() {
 
-        firebaseDatabase = FirebaseDatabase.getInstance();
-        databaseReference = firebaseDatabase.getReference("messages");
+        databaseReference = FirebaseDatabase.getInstance().getReference("messages");
         name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
         messages = new ArrayList<>();
         lastMessage = new ObjectMessage();
-        loopNumber = 0;
         id = 0;
         isMessageSent = false;
         super.onCreate();
@@ -62,18 +58,22 @@ public class NotificationService extends Service {
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                 for(DataSnapshot dataSnapshot:snapshot.getChildren()){
                     ObjectMessage objectMessage = dataSnapshot.getValue(ObjectMessage.class);
-                    messages.add(objectMessage);
+                    if (objectMessage.getMessage_receiver_uid().equals("") ||
+                            objectMessage.getMessage_receiver_uid().equals(user.getUid()) ||
+                            objectMessage.getMessage_uid().equals(user.getUid())){
+                        messages.add(objectMessage);
+                    }
+
                 }
 
                 if (messages.size()>0){
                     if (!(messages.get(messages.size()-1).getMessage_id().equals(lastMessage.getMessage_id()))){
                         lastMessage = messages.get(messages.size()-1);
 
-                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                         String messageSender = lastMessage.getMessage_uid();
-
                         if(!messageSender.equals(user.getUid())) {
                             sendOnChannel();
                         }
@@ -111,43 +111,58 @@ public class NotificationService extends Service {
         return null;
     }
 
-    public static void sendReply(Context context, String contentTitle, String contentText, int id){
+    public static void sendReply(Context context, String contentTitle, String contentText, int id,String messageReceiverUID,String messageReceiverName){
 
-        String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-
-        if(!(contentText.equals(name))){
-            Intent intent = new Intent(context,ChatActivity.class);
-            @SuppressLint("InlinedApi") PendingIntent pendingIntent =
-                    PendingIntent.getActivity(context,1,intent,PendingIntent.FLAG_IMMUTABLE);
-
-            RemoteInput remoteInput = new RemoteInput.Builder("key_text_reply")
-                    .setLabel("Reply")
-                    .build();
-            Intent resultIntent = new Intent(context, DirectReplyReceiver.class);
-            @SuppressLint("InlinedApi") PendingIntent resultPendingIntent =
-                    PendingIntent.getBroadcast(context,
-                            0,
-                            resultIntent,
-                            PendingIntent.FLAG_MUTABLE);
-            NotificationCompat.Action replyAction = new NotificationCompat.Action.Builder(
-                    R.mipmap.ic_launcher,
-                    "Reply",
-                    resultPendingIntent
-            ).addRemoteInput(remoteInput).build();
-
-            Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
-                    .setSmallIcon(R.mipmap.ic_launcher)
-                    .addAction(replyAction)
-                    .setContentTitle(contentTitle)
-                    .setContentText(contentText)
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                    .setAutoCancel(true)
-                    .setContentIntent(pendingIntent)
-                    .build();
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-            notificationManager.notify(id,notification);
+        Intent intent;
+        if (messageReceiverUID.equals("")){
+            intent = new Intent(context,ChatActivity.class);
+        }else{
+            intent = new Intent(context,MessageActivity.class);
+            intent.putExtra("friendUID",messageReceiverUID);
+            intent.putExtra("friendName",messageReceiverName);
         }
+        @SuppressLint("InlinedApi") PendingIntent pendingIntent =
+                PendingIntent.getActivity(
+                        context,
+                        0,
+                        intent,
+                        PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+                );
+
+        RemoteInput remoteInput = new RemoteInput.Builder("key_text_reply")
+                .setLabel("Reply")
+                .build();
+
+        Intent resultIntent = new Intent(context, DirectReplyReceiver.class);
+        if (messageReceiverUID.equals("")){
+        }else{
+            resultIntent.putExtra("friendUID",messageReceiverUID);
+            resultIntent.putExtra("friendName",messageReceiverName);
+        }
+
+        @SuppressLint("InlinedApi") PendingIntent resultPendingIntent =
+                PendingIntent.getBroadcast(context,
+                        0,
+                        resultIntent,
+                        PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Action replyAction = new NotificationCompat.Action.Builder(
+                R.mipmap.ic_launcher,
+                "Reply",
+                resultPendingIntent
+        ).addRemoteInput(remoteInput).build();
+
+        Notification notification = new NotificationCompat.Builder(context, CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .addAction(replyAction)
+                .setContentTitle(contentTitle)
+                .setContentText(contentText)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .build();
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.notify(id,notification);
 
     }
 
@@ -155,8 +170,18 @@ public class NotificationService extends Service {
         if(!isMessageSent){
             String contentTitle = lastMessage.getMessage_name();
             String contentText = lastMessage.getMessage();
+            String messageReceiverUID = lastMessage.getMessage_receiver_uid();
+            String receiverUID;
+            String receiverName = null;
+            if (messageReceiverUID.equals("")){
+                receiverUID = "";
+            }else{
+                receiverUID = lastMessage.getMessage_uid();
+                receiverName = lastMessage.getMessage_name();
+            }
+
             id = id + 1;
-            sendReply(getApplicationContext(),contentTitle,contentText,id);
+            sendReply(getApplicationContext(),contentTitle,contentText,id,receiverUID,receiverName);
             isMessageSent = true;
         }
         else{

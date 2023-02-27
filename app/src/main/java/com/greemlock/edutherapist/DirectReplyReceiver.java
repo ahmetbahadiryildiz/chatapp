@@ -30,15 +30,17 @@ public class DirectReplyReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
-        int id = intent.getIntExtra("id",1);
 
         FirebaseUser name = FirebaseAuth.getInstance().getCurrentUser();
         Date currentDate = Calendar.getInstance().getTime();
 
+        String friendUID = intent.getStringExtra("friendUID");
+        String friendName = intent.getStringExtra("friendName");
+
         FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         DatabaseReference databaseReference = firebaseDatabase.getReference("messages");
 
-        ObjectMessage newMessage = new ObjectMessage("",name.getUid(), name.getDisplayName(),remoteInput.getCharSequence("key_text_reply").toString(),currentDate.toString());
+        ObjectMessage newMessage = new ObjectMessage("",name.getUid(),friendUID ,name.getDisplayName(),remoteInput.getCharSequence("key_text_reply").toString(),currentDate.toString());
         databaseReference.push().setValue(newMessage);
 
         Query addMessageId = databaseReference.orderByChild("message").equalTo(newMessage.getMessage());
@@ -63,7 +65,6 @@ public class DirectReplyReceiver extends BroadcastReceiver {
             public void onCancelled(@NonNull DatabaseError error) {
             }
         });
-        ChatActivity chatActivity = new ChatActivity();
 
         DatabaseReference databaseReference1 = FirebaseDatabase.getInstance().getReference("users");
         Query findUserName = databaseReference1.orderByChild("userUID").equalTo(newMessage.getMessage_uid());
@@ -72,7 +73,7 @@ public class DirectReplyReceiver extends BroadcastReceiver {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 for(DataSnapshot dataSnapshot: snapshot.getChildren()){
-                    NotificationService.sendReply(context,dataSnapshot.getValue(User.class).getUserDisplayName(),newMessage.getMessage(),id);
+                    NotificationService.sendReply(context,dataSnapshot.getValue(User.class).getUserDisplayName(),newMessage.getMessage(),1,friendUID,friendName);
                 }
             }
             @Override
