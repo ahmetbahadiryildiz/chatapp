@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
             startService(intent);
         }
 
-        Intent intentChat = new Intent(this, ChatActivity.class);
+        Intent intentChat = new Intent(this, ProfileActivity.class);
         intentChat.putExtra("currentUser",user);
         startActivity(intentChat);
     }

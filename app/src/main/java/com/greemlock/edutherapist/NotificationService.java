@@ -28,7 +28,11 @@ import com.google.firebase.database.ValueEventListener;
 import com.greemlock.edutherapist.Objects.ObjectMessage;
 import com.greemlock.edutherapist.Objects.User;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 public class NotificationService extends Service {
 
@@ -74,9 +78,28 @@ public class NotificationService extends Service {
                         lastMessage = messages.get(messages.size()-1);
 
                         String messageSender = lastMessage.getMessage_uid();
-                        if(!messageSender.equals(user.getUid())) {
-                            sendOnChannel();
+
+                        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        Date messageDate = new Date();
+                        try {
+                            messageDate = dateFormat.parse(lastMessage.getMessage_date());
+
+                        } catch (ParseException e) {e.printStackTrace();}
+
+                        Date currentDate = Calendar.getInstance().getTime();
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.setTime(currentDate);
+                        calendar.add(Calendar.HOUR, -3);
+                        Date newDate = calendar.getTime();
+                        Log.e("deneme", newDate.toString());
+                        Log.e("deneme", String.valueOf(messageDate.after(newDate)));
+
+                        if (messageDate.after(newDate)){
+                            if(!messageSender.equals(user.getUid())) {
+                                sendOnChannel();
+                            }
                         }
+
 
                     }
                 }
@@ -178,6 +201,7 @@ public class NotificationService extends Service {
             }else{
                 receiverUID = lastMessage.getMessage_uid();
                 receiverName = lastMessage.getMessage_name();
+                contentTitle = String.format("%s send a direct message",lastMessage.getMessage_name());
             }
 
             id = id + 1;

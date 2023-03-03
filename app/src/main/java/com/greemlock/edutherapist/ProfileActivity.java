@@ -3,6 +3,7 @@ package com.greemlock.edutherapist;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -47,9 +48,10 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
-        TextView tv_name = findViewById(R.id.tv_username);
-        TextView tv_email = findViewById(R.id.tv_useremail);
-        ImageView iv_photo = findViewById(R.id.iv_photo);
+        ConstraintLayout layoutProfile = findViewById(R.id.layout_profile);
+        TextView tv_name = layoutProfile.findViewById(R.id.tv_username);
+        TextView tv_email = layoutProfile.findViewById(R.id.tv_useremail);
+        ImageView iv_photo = layoutProfile.findViewById(R.id.iv_photo);
         ListView list_friendsList = findViewById(R.id.list_friendsList);
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -92,6 +94,7 @@ public class ProfileActivity extends AppCompatActivity {
                 for(DataSnapshot dataSnapshot: snapshot.getChildren()){
                     User user1 = dataSnapshot.getValue(User.class);
                     ArrayList<String> list = new ArrayList<>();
+                    list.add("Enter the chat room");
                     if(user1.getUserFriends() != null){
                         for(String item : user1.getUserFriends()){
                             Query findFriend = databaseReference.orderByChild("userUID").equalTo(item);
@@ -108,12 +111,17 @@ public class ProfileActivity extends AppCompatActivity {
                                         list_friendsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                             @Override
                                             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                                String friendUID = user1.getUserFriends().get(i);
-                                                String friendName = list.get(i);
-                                                Intent intentGoDirectMessages = new Intent(ProfileActivity.this,MessageActivity.class);
-                                                intentGoDirectMessages.putExtra("friendUID",friendUID);
-                                                intentGoDirectMessages.putExtra("friendName",friendName);
-                                                startActivity(intentGoDirectMessages);
+                                                if (i == 0){
+                                                    Intent goToChatRoom = new Intent(ProfileActivity.this,ChatActivity.class);
+                                                    startActivity(goToChatRoom);
+                                                }else{
+                                                    String friendUID = user1.getUserFriends().get(i-1);
+                                                    String friendName = list.get(i);
+                                                    Intent intentGoDirectMessages = new Intent(ProfileActivity.this,MessageActivity.class);
+                                                    intentGoDirectMessages.putExtra("friendUID",friendUID);
+                                                    intentGoDirectMessages.putExtra("friendName",friendName);
+                                                    startActivity(intentGoDirectMessages);
+                                                }
                                             }
                                         });
                                     }
@@ -140,6 +148,11 @@ public class ProfileActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             case android.R.id.home:
+                Toast.makeText(this, "You logged out!", Toast.LENGTH_SHORT).show();
+                FirebaseAuth.getInstance().signOut();
+
+                Intent stopService = new Intent(ProfileActivity.this, NotificationService.class);
+                stopService(stopService);
                 this.finish();
                 return true;
 

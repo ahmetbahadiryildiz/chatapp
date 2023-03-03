@@ -34,11 +34,11 @@
         <activity
             android:name=".ChatActivity"
             android:exported="false"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName=".ProfileActivity" />
         <activity
             android:name=".ProfileActivity"
             android:exported="false"
-            android:parentActivityName=".ChatActivity" />
+            android:parentActivityName=".MainActivity" />
 
         <service
             android:name=".NotificationService"

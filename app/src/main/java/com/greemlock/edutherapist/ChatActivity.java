@@ -139,12 +139,6 @@ public class ChatActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             case android.R.id.home:
-                Toast.makeText(this, "You logged out!", Toast.LENGTH_SHORT).show();
-                FirebaseAuth.getInstance().signOut();
-
-                Intent stopService = new Intent(ChatActivity.this, NotificationService.class);
-                stopService(stopService);
-
                 this.finish();
                 return true;
 

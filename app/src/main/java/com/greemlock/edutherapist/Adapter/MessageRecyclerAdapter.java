@@ -288,8 +288,10 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     public int getItemViewType(int position) {
         final ObjectMessage objectMessage = messages.get(position);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        String userUid = user.getUid();
-
+        String userUid = "";
+        if (user.getUid() != null){
+            userUid = user.getUid();
+        }
         if(userUid.equals(objectMessage.getMessage_uid())){
             return 1;
         }
