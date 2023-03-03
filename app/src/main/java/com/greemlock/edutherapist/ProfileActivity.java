@@ -5,6 +5,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -39,9 +41,13 @@ import com.greemlock.edutherapist.Objects.User;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
+
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +59,6 @@ public class ProfileActivity extends AppCompatActivity {
         TextView tv_email = layoutProfile.findViewById(R.id.tv_useremail);
         ImageView iv_photo = layoutProfile.findViewById(R.id.iv_photo);
         ListView list_friendsList = findViewById(R.id.list_friendsList);
-
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         tv_name.setText(user.getDisplayName());
         tv_email.setText(user.getEmail());
@@ -148,12 +152,52 @@ public class ProfileActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             case android.R.id.home:
-                Toast.makeText(this, "You logged out!", Toast.LENGTH_SHORT).show();
-                FirebaseAuth.getInstance().signOut();
 
-                Intent stopService = new Intent(ProfileActivity.this, NotificationService.class);
-                stopService(stopService);
-                this.finish();
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(ProfileActivity.this);
+                final View contactPopupView = getLayoutInflater().inflate(R.layout.pop_up_log_out,null);
+
+                Button b_yes = contactPopupView.findViewById(R.id.b_yes);
+                Button b_no = contactPopupView.findViewById(R.id.b_no);
+
+                dialogBuilder.setView(contactPopupView);
+                AlertDialog dialog = dialogBuilder.create();
+                dialog.show();
+
+                b_no.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        dialog.cancel();
+                    }
+                });
+                b_yes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(getApplicationContext(), "You logged out!", Toast.LENGTH_SHORT).show();
+                        FirebaseAuth.getInstance().signOut();
+
+                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
+                        Query setOnline = databaseReference.orderByChild("userUID").equalTo(user.getUid());
+                        setOnline.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                for (DataSnapshot dataSnapshot:snapshot.getChildren()){
+                                    String key = dataSnapshot.getKey();
+                                    Map<String,Object> stringObjectMap = new HashMap<>();
+                                    stringObjectMap.put("userIsOnline",false);
+                                    databaseReference.child(key).updateChildren(stringObjectMap);
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {}
+                        });
+
+                        Intent stopService = new Intent(ProfileActivity.this, NotificationService.class);
+                        stopService(stopService);
+                        finish();
+                        dialog.cancel();
+                    }
+                });
                 return true;
 
         }

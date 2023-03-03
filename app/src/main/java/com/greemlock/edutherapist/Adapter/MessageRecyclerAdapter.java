@@ -54,7 +54,6 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     private AlertDialog.Builder dialogBuilder;
     private AlertDialog dialog;
     Bitmap bm;
-    boolean isfriend;
 
     public MessageRecyclerAdapter(Context context, List<ObjectMessage> messages){
         this.context = context;

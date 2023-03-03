@@ -25,10 +25,20 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.greemlock.edutherapist.ChatActivity;
 import com.greemlock.edutherapist.MainActivity;
 import com.greemlock.edutherapist.NotificationService;
+import com.greemlock.edutherapist.ProfileActivity;
 import com.greemlock.edutherapist.R;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginFragment extends Fragment {
 
@@ -77,7 +87,7 @@ public class LoginFragment extends Fragment {
                                 } else {
                                     // If sign in fails, display a message to the user.
                                     Log.w(TAG, "signInWithEmail:failure", task.getException());
-                                    Toast.makeText(getActivity(), "Authentication failed.",
+                                    Toast.makeText(getActivity(), task.getException().getLocalizedMessage(),
                                             Toast.LENGTH_SHORT).show();
                                 }
                             }
@@ -118,6 +128,23 @@ public class LoginFragment extends Fragment {
 
     public void loginActivity(FirebaseUser user){
 
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
+        Query setOnline = databaseReference.orderByChild("userUID").equalTo(user.getUid());
+        setOnline.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot dataSnapshot:snapshot.getChildren()){
+                    String key = dataSnapshot.getKey();
+                    Map<String,Object> stringObjectMap = new HashMap<>();
+                    stringObjectMap.put("userIsOnline",true);
+                    databaseReference.child(key).updateChildren(stringObjectMap);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {}
+        });
+
         Intent intent = new Intent(getActivity(), NotificationService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             getActivity().startForegroundService(intent);
@@ -126,7 +153,7 @@ public class LoginFragment extends Fragment {
             getActivity().startService(intent);
         }
 
-        Intent intentChat = new Intent(getActivity(), ChatActivity.class);
+        Intent intentChat = new Intent(getActivity(), ProfileActivity.class);
         intentChat.putExtra("currentUser",user);
         startActivity(intentChat);
     }

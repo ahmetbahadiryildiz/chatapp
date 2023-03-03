@@ -11,15 +11,17 @@ public class User implements Serializable {
     private String userDisplayName;
     private String userEmail;
     private ArrayList<String> userFriends;
+    private boolean userIsOnline;
 
     public User() {
     }
 
-    public User(String userUID, String userDisplayName, String userEmail, ArrayList<String> userFriends) {
+    public User(String userUID, String userDisplayName, String userEmail, ArrayList<String> userFriends, boolean userIsOnline) {
         this.userUID = userUID;
         this.userDisplayName = userDisplayName;
         this.userEmail = userEmail;
         this.userFriends = userFriends;
+        this.userIsOnline = userIsOnline;
     }
 
     public String getUserUID() {
@@ -48,5 +50,12 @@ public class User implements Serializable {
     }
     public void setUserFriends(ArrayList<String> userFriends) {
         this.userFriends = userFriends;
+    }
+
+    public boolean isUserIsOnline() {
+        return userIsOnline;
+    }
+    public void setUserIsOnline(boolean userIsOnline) {
+        this.userIsOnline = userIsOnline;
     }
 }

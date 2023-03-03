@@ -112,7 +112,7 @@ public class RegisterFragment extends Fragment {
                                         FirebaseUser user = mAuth.getCurrentUser();
                                         user.sendEmailVerification();
 
-                                        User newUser = new User(user.getUid(),user_name,user_email, new ArrayList<>());
+                                        User newUser = new User(user.getUid(),user_name,user_email, new ArrayList<>(),false);
                                         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
                                         databaseReference.push().setValue(newUser);
 
@@ -192,29 +192,4 @@ public class RegisterFragment extends Fragment {
         }
     }
 
-    private void createOnContactDialog() {
-
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
-        final View contactPopupView = getLayoutInflater().inflate(R.layout.pop_up_crop_image,null);
-
-        CropImageView cropImageView = contactPopupView.findViewById(R.id.cropImageView);
-        Button b_cropImage = contactPopupView.findViewById(R.id.b_cropImage);
-
-        cropImageView.setImageUriAsync(profile_photo);
-        cropImageView.setAspectRatio(1,1);
-
-        dialogBuilder.setView(contactPopupView);
-        AlertDialog dialog = dialogBuilder.create();
-        dialog.show();
-
-        b_cropImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                Bitmap croppedImage = cropImageView.getCroppedImage();
-                imageView.setImageBitmap(croppedImage);
-                dialog.cancel();
-            }
-        });
-    }
 }

@@ -30,6 +30,7 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.greemlock.edutherapist.Adapter.MessageRecyclerAdapter;
+import com.greemlock.edutherapist.Adapter.MessageRecyclerAdapterDM;
 import com.greemlock.edutherapist.Objects.ObjectMessage;
 
 import java.io.File;
@@ -91,7 +92,7 @@ public class MessageActivity extends AppCompatActivity {
 
 
                 }
-                MessageRecyclerAdapter messageRecyclerAdapter = new MessageRecyclerAdapter(MessageActivity.this,messageList);
+                MessageRecyclerAdapterDM messageRecyclerAdapter = new MessageRecyclerAdapterDM(MessageActivity.this,messageList);
                 recyclerView.setAdapter(messageRecyclerAdapter);
                 if (messageList.size() > 0){
                     recyclerView.scrollToPosition(messageList.size()-1);

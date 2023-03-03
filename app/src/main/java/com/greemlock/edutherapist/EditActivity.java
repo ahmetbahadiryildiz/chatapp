@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -19,6 +20,7 @@ import android.widget.ImageView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -29,11 +31,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.greemlock.edutherapist.Objects.User;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,7 +62,30 @@ public class EditActivity extends AppCompatActivity {
         imageView = findViewById(R.id.iv_photo);
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
         et_name.setText(user.getDisplayName());
+
+        StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("profilePhotos/"+ user.getUid());
+        try {
+            File file = File.createTempFile("images","jpg");
+            storageReference.getFile(file).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    String s_file_path = file.getPath();
+                    Bitmap bm = BitmapFactory.decodeFile(s_file_path);
+                    imageView.setImageBitmap(bm);
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    imageView.setImageResource(R.drawable.ic_baseline_person_24);
+                }
+            });
+        }
+        catch (Exception e){
+            Log.e("hata",e.getMessage());
+
+        }
 
         b_addPhoto.setOnClickListener(new View.OnClickListener() {
             @Override
