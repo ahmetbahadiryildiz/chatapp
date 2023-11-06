@@ -4,11 +4,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.NotificationCompat;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -18,6 +21,7 @@ import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -38,21 +42,31 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.greemlock.edutherapist.Objects.User;
+import com.sendbird.calls.AcceptParams;
+import com.sendbird.calls.DirectCall;
+import com.sendbird.calls.SendBirdCall;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
 
+    private static final String[] MANDATORY_PERMISSIONS = {"android.permission.CAMERA", "android.permission.RECORD_AUDIO", "android.permission.WRITE_EXTERNAL_STORAGE"};
+    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 1;
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+        checkPermissions();
+        if (getIntent().getBooleanExtra(NotificationCompat.CATEGORY_STATUS, false)) {
+            showPopup();
+        }
+
 
         ConstraintLayout layoutProfile = findViewById(R.id.layout_profile);
         TextView tv_name = layoutProfile.findViewById(R.id.tv_username);
@@ -208,5 +222,98 @@ public class ProfileActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.actionbar_profile,menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    private void checkPermissions() {
+        ArrayList<String> deniedPermissions = new ArrayList<>();
+        for (String permission : MANDATORY_PERMISSIONS) {
+            if (checkCallingOrSelfPermission(permission)
+                    != PackageManager.PERMISSION_GRANTED) {
+                deniedPermissions.add(permission);
+            }
+        }
+        if (deniedPermissions.size() > 0) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(deniedPermissions.toArray(new String[0]),
+                        REQUEST_PERMISSIONS_REQUEST_CODE);
+            } else {
+                android.util.Log.e("VideoChat",
+                        "[VideoChatActivity] PERMISSION_DENIED");
+            }
+        }
+    }
+
+    private void showPopup(){
+
+        String callID = null;
+
+        callID = getIntent().getStringExtra("callID");
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        View contactPopupView = getLayoutInflater().inflate(R.layout.pop_up_incoming_call, null);
+
+        Log.e("CALL ID", callID);
+
+        DirectCall call = SendBirdCall.getCall(callID);
+        String callerID = call.getCaller().getUserId();
+
+        dialogBuilder.setView(contactPopupView);
+        AlertDialog dialog = dialogBuilder.create();
+
+        TextView textViewCaller = contactPopupView.findViewById(R.id.textViewCallee);
+        ImageView imageViewCaller = contactPopupView.findViewById(R.id.imageViewCaller);
+
+        ImageButton imageButtonAccept = contactPopupView.findViewById(R.id.imageButtonAccept);
+        imageButtonAccept.setOnClickListener(view -> {
+
+            call.accept(new AcceptParams());
+            dialog.cancel();
+            Intent intent = new Intent(getApplicationContext(), VideoCallActivity.class);
+            intent.putExtra("callID", call.getCallId());
+            startActivity(intent);
+        });
+
+        ImageButton imageButtonDecline = contactPopupView.findViewById(R.id.imageButtonDecline);
+        imageButtonDecline.setOnClickListener(view ->{
+            call.end();
+            dialog.cancel();
+        });
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("users");
+        Query getUserUID = databaseReference.orderByChild("userUID").endAt(callerID);
+        getUserUID.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot dataSnapshot: snapshot.getChildren()){
+                    User user1 = dataSnapshot.getValue(User.class);
+                    textViewCaller.setText(user1.getUserDisplayName());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        StorageReference reference = FirebaseStorage.getInstance().getReference();
+        StorageReference storageReference = reference.child("profilePhotos/"+ callerID);
+
+        try {
+            File file = File.createTempFile("images","jpg");
+            String str = callID;
+            try {
+                storageReference.getFile(file).addOnSuccessListener(taskSnapshot -> {
+                    imageViewCaller.setImageBitmap(BitmapFactory.decodeFile(file.getPath()));
+                }).addOnFailureListener(e -> {
+                    imageViewCaller.setImageResource(R.drawable.ic_baseline_person_24);
+                });
+            }
+            catch (Exception e){
+                Log.e("error",e.getLocalizedMessage());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        dialog.show();
     }
 }

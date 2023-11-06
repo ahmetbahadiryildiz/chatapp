@@ -56,9 +56,9 @@ public class MainActivity extends AppCompatActivity {
         else{
             startService(intent);
         }
-
         Intent intentChat = new Intent(this, ProfileActivity.class);
-        intentChat.putExtra("currentUser",user);
+        startService(new Intent(this, CallService.class));
+
         startActivity(intentChat);
     }
 }

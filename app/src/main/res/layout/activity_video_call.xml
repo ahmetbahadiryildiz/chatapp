@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.sendbird.calls.SendBirdVideoView
+        android:id="@+id/video_view_fullscreen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/imageViewMicOff"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="@+id/layoutCall"
+        app:layout_constraintTop_toTopOf="@+id/video_view_fullscreen"
+        app:srcCompat="@drawable/baseline_mic_off_24" />
+
+    <ImageView
+        android:id="@+id/imageViewVideoOff"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintStart_toEndOf="@+id/imageViewMicOff"
+        app:layout_constraintTop_toTopOf="@+id/imageViewMicOff"
+        app:srcCompat="@drawable/baseline_videocam_off_24" />
+
+    <com.sendbird.calls.SendBirdVideoView
+        android:id="@+id/video_view_small"
+        android:layout_width="64dp"
+        android:layout_height="128dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline3"
+        app:layout_constraintStart_toStartOf="@+id/video_view_fullscreen" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.85" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutSettings"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#80171717"
+        app:layout_constraintBottom_toBottomOf="@+id/video_view_fullscreen"
+        app:layout_constraintEnd_toEndOf="@+id/video_view_fullscreen"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@+id/video_view_fullscreen"
+        app:layout_constraintTop_toTopOf="@+id/guideline3">
+
+        <ImageButton
+            android:id="@+id/imageButtonVideo"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="#2b2b2b"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/baseline_videocam_24" />
+
+        <ImageButton
+            android:id="@+id/imageButtonMic"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="#2b2b2b"
+            app:layout_constraintBottom_toBottomOf="@+id/imageButtonVideo"
+            app:layout_constraintStart_toEndOf="@+id/imageButtonVideo"
+            app:layout_constraintTop_toTopOf="@+id/imageButtonVideo"
+            app:srcCompat="@drawable/baseline_mic_24" />
+
+        <ImageButton
+            android:id="@+id/imageButtonRotate"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
+            android:backgroundTint="#2b2b2b"
+            app:layout_constraintBottom_toBottomOf="@+id/video_view_fullscreen"
+            app:layout_constraintStart_toEndOf="@+id/imageButtonMic"
+            app:layout_constraintTop_toTopOf="@+id/imageButtonMic"
+            app:srcCompat="@drawable/baseline_cameraswitch_24" />
+
+        <ImageButton
+            android:id="@+id/imageButtonEnd"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="#EF5350"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/baseline_call_end_24" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutCall"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#80171717"
+        app:layout_constraintBottom_toTopOf="@+id/guideline3"
+        app:layout_constraintEnd_toEndOf="@+id/video_view_fullscreen"
+        app:layout_constraintStart_toStartOf="@+id/video_view_fullscreen"
+        app:layout_constraintTop_toTopOf="@+id/video_view_fullscreen">
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="TextView"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageView3" />
+
+        <ImageView
+            android:id="@+id/imageView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:srcCompat="@tools:sample/avatars" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

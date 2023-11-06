@@ -1,6 +1,7 @@
 package com.greemlock.edutherapist;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,6 +13,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
@@ -32,6 +34,12 @@ import com.google.firebase.storage.StorageReference;
 import com.greemlock.edutherapist.Adapter.MessageRecyclerAdapter;
 import com.greemlock.edutherapist.Adapter.MessageRecyclerAdapterDM;
 import com.greemlock.edutherapist.Objects.ObjectMessage;
+import com.sendbird.calls.CallOptions;
+import com.sendbird.calls.DialParams;
+import com.sendbird.calls.DirectCall;
+import com.sendbird.calls.SendBirdCall;
+import com.sendbird.calls.SendBirdException;
+import com.sendbird.calls.handler.DialHandler;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -42,13 +50,18 @@ import java.util.Map;
 
 public class MessageActivity extends AppCompatActivity {
 
+    private String friendName;
+    private String friendUID;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_message);
 
-        String friendUID = getIntent().getStringExtra("friendUID");
-        String friendName = getIntent().getStringExtra("friendName");
+        Log.e("MESSAGEACTIVITY.JAVA","MESSAGEACTIVITY.JAVA");
+
+        friendUID = getIntent().getStringExtra("friendUID");
+        friendName = getIntent().getStringExtra("friendName");
 
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         ActionBar actionBar = getSupportActionBar();
@@ -154,12 +167,36 @@ public class MessageActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.actionbar, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 this.finish();
                 return true;
-
+            case R.id.profileItem:
+                friendName = getIntent().getStringExtra("friendName");
+                DialParams paramsCall = new DialParams(friendUID);
+                paramsCall.setVideoCall(true);
+                paramsCall.setCallOptions(new CallOptions());
+                SendBirdCall.dial(paramsCall, new DialHandler() {
+                    @Override
+                    public void onResult(@Nullable DirectCall call, @Nullable SendBirdException e) {
+                        if (e != null) {
+                            e.printStackTrace();
+                            return;
+                        }
+                        Toast.makeText(MessageActivity.this, "RINGING", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(MessageActivity.this, VideoCallActivity.class);
+                        intent.putExtra("callID", call.getCallId());
+                        intent.putExtra("calleeName", MessageActivity.this.friendName);
+                        MessageActivity.this.startActivity(intent);
+                    }
+                });
+                
         }
         return super.onOptionsItemSelected(item);
     }
